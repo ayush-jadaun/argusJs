@@ -1,10 +1,11 @@
 import type { ArgusConfig } from '../types/config.js';
-import type { User, Session, AuditAction } from '../types/entities.js';
-import type { AuthResponse, UserResponse, MFAChallengeResponse, AccessTokenClaims } from '../types/responses.js';
+import type { User, Session, AuditAction, Organization, OrgMember, OrgInvite, OrgSettings, ApiKey, Role, Webhook } from '../types/entities.js';
+import type { AuthResponse, UserResponse, MFAChallengeResponse, AccessTokenClaims, OAuthTokens } from '../types/responses.js';
 import type { DbAdapter } from '../interfaces/db-adapter.js';
 import type { CacheAdapter } from '../interfaces/cache-adapter.js';
 import type { PasswordHasher } from '../interfaces/password-hasher.js';
 import type { TokenProvider } from '../interfaces/token-provider.js';
+import type { OAuthProviderAdapter } from '../interfaces/oauth-provider.js';
 import type { EmailProvider } from '../interfaces/email-provider.js';
 import type { RateLimiter } from '../interfaces/rate-limiter.js';
 import type { PasswordPolicy } from '../interfaces/password-policy.js';
@@ -12,6 +13,10 @@ import type { SecurityEngine } from '../interfaces/security-engine.js';
 import { Errors } from '../types/errors.js';
 import { ArgusEventEmitter } from './event-emitter.js';
 import { generateToken, hashToken, generateUUID } from '../utils/crypto.js';
+import { AuthorizationEngine } from './authorization.js';
+import { WebhookDispatcher } from './webhook-dispatcher.js';
+import { randomBytes, createHash } from 'node:crypto';
+
 
 export interface RegisterInput {
   email: string;
@@ -38,6 +43,14 @@ export class Argus {
   private readonly security?: SecurityEngine;
   private readonly config: ArgusConfig;
   private readonly emitter: ArgusEventEmitter;
+  private readonly authorizationEngine: AuthorizationEngine;
+  private readonly webhookDispatcher: WebhookDispatcher;
+
+  public readonly oauth: OAuthNamespace;
+  public readonly orgs: OrgNamespace;
+  public readonly roles: RoleNamespace;
+  public readonly apiKeys: ApiKeyNamespace;
+  public readonly webhooks: WebhookNamespace;
 
   constructor(config: ArgusConfig) {
     this.db = config.db;
@@ -50,6 +63,15 @@ export class Argus {
     this.security = config.security;
     this.config = config;
     this.emitter = new ArgusEventEmitter();
+    this.authorizationEngine = new AuthorizationEngine(this.db);
+    this.webhookDispatcher = new WebhookDispatcher(this.db, this.emitter);
+
+    // Initialize namespaces
+    this.oauth = this.createOAuthNamespace();
+    this.orgs = this.createOrgNamespace();
+    this.roles = this.createRoleNamespace();
+    this.apiKeys = this.createApiKeyNamespace();
+    this.webhooks = this.createWebhookNamespace();
   }
 
   async init(): Promise<void> {
@@ -64,6 +86,13 @@ export class Argus {
         if (policy.init) await policy.init();
       }
     }
+    // Initialize OAuth providers
+    if (this.config.oauth) {
+      for (const provider of Object.values(this.config.oauth)) {
+        if (provider.init) await provider.init();
+      }
+    }
+    this.webhookDispatcher.init();
   }
 
   async shutdown(): Promise<void> {
@@ -787,4 +816,812 @@ export class Argus {
       createdAt: new Date(),
     });
   }
+
+  // ─── Authorization ──────────────────────────────────────────────────
+
+  async authorize(userId: string, action: string, context?: Record<string, unknown>): Promise<boolean> {
+    return this.authorizationEngine.authorize(userId, action, context);
+  }
+
+  // ─── OAuth Namespace ─────────────────────────────────────────────────
+
+  private getOAuthProvider(providerName: string): OAuthProviderAdapter {
+    const provider = this.config.oauth?.[providerName];
+    if (!provider) {
+      throw Errors.providerNotConfigured(providerName);
+    }
+    return provider;
+  }
+
+  private generatePKCE(): { codeVerifier: string; codeChallenge: string } {
+    const codeVerifier = randomBytes(32).toString('base64url');
+    const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
+    return { codeVerifier, codeChallenge };
+  }
+
+  private createOAuthNamespace(): OAuthNamespace {
+    return {
+      getAuthorizationUrl: async (providerName: string, redirectUri: string) => {
+        const provider = this.getOAuthProvider(providerName);
+
+        // Generate state and PKCE
+        const state = generateToken(32);
+        const { codeVerifier, codeChallenge } = this.generatePKCE();
+
+        // Store state + verifier in cache with 5 min TTL
+        await this.cache.set(`oauth:state:${state}`, JSON.stringify({
+          provider: providerName,
+          codeVerifier,
+          redirectUri,
+        }), 300);
+
+        const url = provider.getAuthorizationUrl(state, redirectUri, codeChallenge);
+
+        return { url, state };
+      },
+
+      handleCallback: async (providerName: string, code: string, state: string, context: LoginContext) => {
+        const provider = this.getOAuthProvider(providerName);
+
+        // 1. Validate state from cache
+        const stateData = await this.cache.get(`oauth:state:${state}`);
+        if (!stateData) {
+          throw Errors.oauthFailed('Invalid or expired OAuth state');
+        }
+
+        const { codeVerifier, redirectUri } = JSON.parse(stateData) as {
+          provider: string;
+          codeVerifier: string;
+          redirectUri: string;
+        };
+
+        // Delete state to prevent replay
+        await this.cache.del(`oauth:state:${state}`);
+
+        // 2. Exchange code for tokens via provider
+        let tokens: OAuthTokens;
+        try {
+          tokens = await provider.exchangeCode(code, redirectUri, codeVerifier);
+        } catch (err) {
+          throw Errors.oauthFailed(`Token exchange failed: ${(err as Error).message}`);
+        }
+
+        // 3. Get user profile from provider
+        const profile = await provider.getUserProfile(tokens);
+
+        // 4. Check if OAuth link exists
+        const existingLink = await this.db.findOAuthProvider(providerName, profile.id);
+
+        let user: User;
+
+        if (existingLink) {
+          // Existing link: find the linked user
+          const linkedUser = await this.db.findUserById(existingLink.userId);
+          if (!linkedUser) {
+            throw Errors.oauthFailed('Linked user account not found');
+          }
+          user = linkedUser;
+
+          // Update OAuth link with latest tokens
+          await this.db.linkOAuthProvider({
+            userId: user.id,
+            provider: providerName,
+            providerUserId: profile.id,
+            email: profile.email,
+            displayName: profile.displayName,
+            avatarUrl: profile.avatarUrl,
+            rawProfile: profile.raw,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            tokenExpiresAt: tokens.expiresIn ? new Date(Date.now() + tokens.expiresIn * 1000) : undefined,
+          });
+        } else {
+          // No existing link: check if email matches an existing user
+          const existingUser = profile.email ? await this.db.findUserByEmail(profile.email.toLowerCase()) : null;
+
+          if (existingUser) {
+            user = existingUser;
+          } else {
+            // Create new user
+            user = await this.db.createUser({
+              email: profile.email?.toLowerCase() ?? '',
+              passwordHash: null,
+              displayName: profile.displayName,
+              avatarUrl: profile.avatarUrl,
+              emailVerified: !!profile.email,
+              roles: ['user'],
+            });
+          }
+
+          // Link OAuth provider
+          await this.db.linkOAuthProvider({
+            userId: user.id,
+            provider: providerName,
+            providerUserId: profile.id,
+            email: profile.email,
+            displayName: profile.displayName,
+            avatarUrl: profile.avatarUrl,
+            rawProfile: profile.raw,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            tokenExpiresAt: tokens.expiresIn ? new Date(Date.now() + tokens.expiresIn * 1000) : undefined,
+          });
+
+          // Write audit for new link
+          if (this.config.audit?.enabled) {
+            await this.writeAudit('OAUTH_LINKED', user.id, context.ipAddress, context.userAgent, {
+              provider: providerName,
+              providerUserId: profile.id,
+            });
+          }
+
+          await this.emitter.emit('oauth.linked', {
+            userId: user.id,
+            provider: providerName,
+            timestamp: new Date(),
+          });
+        }
+
+        // 5. Generate tokens and create session
+        const sessionTimeout = this.config.session?.absoluteTimeout ?? 2592000;
+        const session = await this.db.createSession({
+          userId: user.id,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          deviceFingerprint: context.deviceFingerprint,
+          expiresAt: new Date(Date.now() + sessionTimeout * 1000),
+        });
+
+        const accessTokenClaims: AccessTokenClaims = {
+          iss: 'argus',
+          sub: user.id,
+          aud: ['argus'],
+          exp: Math.floor(Date.now() / 1000) + 900,
+          iat: Math.floor(Date.now() / 1000),
+          jti: generateUUID(),
+          email: user.email,
+          emailVerified: user.emailVerified,
+          roles: user.roles,
+          permissions: user.permissions,
+          sessionId: session.id,
+        };
+        const accessToken = await this.token.signAccessToken(accessTokenClaims);
+
+        const refreshTokenRaw = generateToken(48);
+        const refreshTokenHash = hashToken(refreshTokenRaw);
+        const family = generateUUID();
+        await this.db.createRefreshToken({
+          userId: user.id,
+          sessionId: session.id,
+          tokenHash: refreshTokenHash,
+          family,
+          generation: 0,
+          expiresAt: new Date(Date.now() + sessionTimeout * 1000),
+        });
+
+        // Update user last login
+        await this.db.updateUser(user.id, {
+          lastLoginAt: new Date(),
+          lastLoginIp: context.ipAddress,
+        });
+
+        // Write audit
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('LOGIN_SUCCESS', user.id, context.ipAddress, context.userAgent, {
+            method: 'oauth',
+            provider: providerName,
+          });
+        }
+
+        // Emit events
+        await this.emitter.emit('user.login', {
+          userId: user.id,
+          sessionId: session.id,
+          ipAddress: context.ipAddress,
+          method: 'oauth',
+          provider: providerName,
+          timestamp: new Date(),
+        });
+        await this.emitter.emit('session.created', {
+          userId: user.id,
+          sessionId: session.id,
+          timestamp: new Date(),
+        });
+
+        return this.buildAuthResponse(user, accessToken, refreshTokenRaw, 900);
+      },
+
+      link: async (userId: string, providerName: string, code: string, redirectUri: string) => {
+        const provider = this.getOAuthProvider(providerName);
+
+        // Exchange code for tokens
+        const tokens = await provider.exchangeCode(code, redirectUri);
+
+        // Get profile
+        const profile = await provider.getUserProfile(tokens);
+
+        // Check if this provider is already linked to another user
+        const existingLink = await this.db.findOAuthProvider(providerName, profile.id);
+        if (existingLink && existingLink.userId !== userId) {
+          throw Errors.providerAlreadyLinked();
+        }
+
+        // Check if this user already has this provider linked
+        const userProviders = await this.db.getUserOAuthProviders(userId);
+        const alreadyLinked = userProviders.find(p => p.provider === providerName);
+        if (alreadyLinked) {
+          throw Errors.providerAlreadyLinked();
+        }
+
+        // Link
+        await this.db.linkOAuthProvider({
+          userId,
+          provider: providerName,
+          providerUserId: profile.id,
+          email: profile.email,
+          displayName: profile.displayName,
+          avatarUrl: profile.avatarUrl,
+          rawProfile: profile.raw,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          tokenExpiresAt: tokens.expiresIn ? new Date(Date.now() + tokens.expiresIn * 1000) : undefined,
+        });
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('OAUTH_LINKED', userId, null, null, {
+            provider: providerName,
+            providerUserId: profile.id,
+          });
+        }
+
+        await this.emitter.emit('oauth.linked', {
+          userId,
+          provider: providerName,
+          timestamp: new Date(),
+        });
+      },
+
+      unlink: async (userId: string, providerName: string) => {
+        // Check the user has another auth method
+        const user = await this.db.findUserById(userId);
+        if (!user) {
+          throw Errors.notFound('User');
+        }
+
+        const providers = await this.db.getUserOAuthProviders(userId);
+        const hasPassword = !!user.passwordHash;
+        const otherProviders = providers.filter(p => p.provider !== providerName);
+
+        if (!hasPassword && otherProviders.length === 0) {
+          throw Errors.cannotUnlinkOnlyAuth();
+        }
+
+        await this.db.unlinkOAuthProvider(userId, providerName);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('OAUTH_UNLINKED', userId, null, null, {
+            provider: providerName,
+          });
+        }
+
+        await this.emitter.emit('oauth.unlinked', {
+          userId,
+          provider: providerName,
+          timestamp: new Date(),
+        });
+      },
+    };
+  }
+
+  // ─── Organizations Namespace ────────────────────────────────────────
+
+  private createOrgNamespace(): OrgNamespace {
+    return {
+      create: async (input: { name: string; slug: string; ownerId: string; plan?: string; settings?: Partial<OrgSettings> }) => {
+        const org = await this.db.createOrganization(input);
+
+        // Add owner as a member
+        await this.db.addOrgMember({
+          userId: input.ownerId,
+          orgId: org.id,
+          role: 'owner',
+          permissions: [],
+        });
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', input.ownerId, null, null, {
+            subAction: 'org.created',
+            orgId: org.id,
+          });
+        }
+
+        await this.emitter.emit('org.created', {
+          type: 'org.created',
+          orgId: org.id,
+          ownerId: input.ownerId,
+          timestamp: new Date(),
+        });
+
+        return org;
+      },
+
+      get: async (id: string) => {
+        const org = await this.db.getOrganization(id);
+        if (!org) throw Errors.notFound('Organization');
+        return org;
+      },
+
+      update: async (id: string, updates: Partial<Organization>) => {
+        const org = await this.db.getOrganization(id);
+        if (!org) throw Errors.notFound('Organization');
+
+        const updated = await this.db.updateOrganization(id, updates);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+            subAction: 'org.updated',
+            orgId: id,
+          });
+        }
+
+        await this.emitter.emit('org.updated', {
+          type: 'org.updated',
+          orgId: id,
+          timestamp: new Date(),
+        });
+
+        return updated;
+      },
+
+      delete: async (id: string) => {
+        await this.db.deleteOrganization(id);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+            subAction: 'org.deleted',
+            orgId: id,
+          });
+        }
+
+        await this.emitter.emit('org.deleted', {
+          type: 'org.deleted',
+          orgId: id,
+          timestamp: new Date(),
+        });
+      },
+
+      addMember: async (input: { userId: string; orgId: string; role: 'owner' | 'admin' | 'member' | 'viewer' }) => {
+        const member = await this.db.addOrgMember({
+          userId: input.userId,
+          orgId: input.orgId,
+          role: input.role,
+          permissions: [],
+        });
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', input.userId, null, null, {
+            subAction: 'org.member_added',
+            orgId: input.orgId,
+            role: input.role,
+          });
+        }
+
+        await this.emitter.emit('org.member_added', {
+          type: 'org.member_added',
+          orgId: input.orgId,
+          userId: input.userId,
+          role: input.role,
+          timestamp: new Date(),
+        });
+
+        return member;
+      },
+
+      removeMember: async (orgId: string, userId: string) => {
+        await this.db.removeOrgMember(orgId, userId);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', userId, null, null, {
+            subAction: 'org.member_removed',
+            orgId,
+          });
+        }
+
+        await this.emitter.emit('org.member_removed', {
+          type: 'org.member_removed',
+          orgId,
+          userId,
+          timestamp: new Date(),
+        });
+      },
+
+      updateMember: async (orgId: string, userId: string, updates: Partial<OrgMember>) => {
+        const member = await this.db.updateOrgMember(orgId, userId, updates);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', userId, null, null, {
+            subAction: 'org.member_updated',
+            orgId,
+          });
+        }
+
+        await this.emitter.emit('org.member_updated', {
+          type: 'org.member_updated',
+          orgId,
+          userId,
+          timestamp: new Date(),
+        });
+
+        return member;
+      },
+
+      listMembers: async (orgId: string) => {
+        return this.db.listOrgMembers(orgId);
+      },
+
+      createInvite: async (input: { orgId: string; email: string; role: string; invitedBy: string }) => {
+        const token = generateToken(32);
+        const invite = await this.db.createOrgInvite({
+          orgId: input.orgId,
+          email: input.email,
+          role: input.role,
+          invitedBy: input.invitedBy,
+          token,
+          expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000), // 7 days
+        });
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', input.invitedBy, null, null, {
+            subAction: 'org.invite_created',
+            orgId: input.orgId,
+            email: input.email,
+          });
+        }
+
+        await this.emitter.emit('org.invite_created', {
+          type: 'org.invite_created',
+          orgId: input.orgId,
+          email: input.email,
+          timestamp: new Date(),
+        });
+
+        return invite;
+      },
+
+      acceptInvite: async (token: string) => {
+        const invite = await this.db.findOrgInviteByToken(token);
+        if (!invite) throw Errors.invalidToken();
+        if (invite.acceptedAt) throw Errors.invalidToken();
+        if (invite.expiresAt < new Date()) throw Errors.invalidToken();
+
+        await this.db.acceptOrgInvite(invite.id);
+
+        // Find user by email and add as member
+        const user = await this.db.findUserByEmail(invite.email);
+        if (user) {
+          await this.db.addOrgMember({
+            userId: user.id,
+            orgId: invite.orgId,
+            role: invite.role as 'owner' | 'admin' | 'member' | 'viewer',
+            permissions: [],
+          });
+        }
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', user?.id ?? null, null, null, {
+            subAction: 'org.invite_accepted',
+            orgId: invite.orgId,
+          });
+        }
+
+        await this.emitter.emit('org.invite_accepted', {
+          type: 'org.invite_accepted',
+          orgId: invite.orgId,
+          email: invite.email,
+          timestamp: new Date(),
+        });
+      },
+
+      listInvites: async (orgId: string) => {
+        return this.db.listPendingInvites(orgId);
+      },
+
+      updateSettings: async (orgId: string, settings: Partial<OrgSettings>) => {
+        const org = await this.db.getOrganization(orgId);
+        if (!org) throw Errors.notFound('Organization');
+
+        const updatedSettings: OrgSettings = { ...org.settings, ...settings };
+        const updated = await this.db.updateOrganization(orgId, { settings: updatedSettings });
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+            subAction: 'org.settings_updated',
+            orgId,
+          });
+        }
+
+        await this.emitter.emit('org.settings_updated', {
+          type: 'org.settings_updated',
+          orgId,
+          timestamp: new Date(),
+        });
+
+        return updated;
+      },
+    };
+  }
+
+  // ─── Roles Namespace ───────────────────────────────────────────────
+
+  private createRoleNamespace(): RoleNamespace {
+    return {
+      create: async (role: Role) => {
+        const created = await this.db.createRole(role);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ROLE_CHANGED', null, null, null, {
+            subAction: 'role.created',
+            roleName: role.name,
+          });
+        }
+
+        await this.emitter.emit('role.created', {
+          type: 'role.created',
+          roleName: role.name,
+          timestamp: new Date(),
+        });
+
+        return created;
+      },
+
+      get: async (name: string) => {
+        const role = await this.db.getRole(name);
+        if (!role) throw Errors.notFound('Role');
+        return role;
+      },
+
+      list: async () => {
+        return this.db.listRoles();
+      },
+
+      update: async (name: string, updates: Partial<Role>) => {
+        const updated = await this.db.updateRole(name, updates);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ROLE_CHANGED', null, null, null, {
+            subAction: 'role.updated',
+            roleName: name,
+          });
+        }
+
+        await this.emitter.emit('role.updated', {
+          type: 'role.updated',
+          roleName: name,
+          timestamp: new Date(),
+        });
+
+        return updated;
+      },
+
+      delete: async (name: string) => {
+        await this.db.deleteRole(name);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ROLE_CHANGED', null, null, null, {
+            subAction: 'role.deleted',
+            roleName: name,
+          });
+        }
+
+        await this.emitter.emit('role.deleted', {
+          type: 'role.deleted',
+          roleName: name,
+          timestamp: new Date(),
+        });
+      },
+    };
+  }
+
+  // ─── API Keys Namespace ────────────────────────────────────────────
+
+  private createApiKeyNamespace(): ApiKeyNamespace {
+    return {
+      create: async (userId: string, input: { name: string; permissions: string[]; orgId?: string; expiresAt?: Date; ipAllowlist?: string[] }) => {
+        const rawKey = `argus_pk_${generateToken(36)}`;
+        const keyHash = hashToken(rawKey);
+        const keyPrefix = rawKey.slice(0, 16);
+
+        const apiKey = await this.db.createApiKey({
+          name: input.name,
+          keyPrefix,
+          keyHash,
+          userId,
+          orgId: input.orgId,
+          permissions: input.permissions,
+          ipAllowlist: input.ipAllowlist,
+          expiresAt: input.expiresAt,
+        });
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', userId, null, null, {
+            subAction: 'apikey.created',
+            keyId: apiKey.id,
+            name: input.name,
+          });
+        }
+
+        await this.emitter.emit('apikey.created', {
+          type: 'apikey.created',
+          userId,
+          keyId: apiKey.id,
+          timestamp: new Date(),
+        });
+
+        return { apiKey, rawKey };
+      },
+
+      list: async (userId: string) => {
+        return this.db.listApiKeys(userId);
+      },
+
+      revoke: async (id: string) => {
+        await this.db.revokeApiKey(id);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+            subAction: 'apikey.revoked',
+            keyId: id,
+          });
+        }
+
+        await this.emitter.emit('apikey.revoked', {
+          type: 'apikey.revoked',
+          keyId: id,
+          timestamp: new Date(),
+        });
+      },
+
+      validate: async (rawKey: string) => {
+        const keyHash = hashToken(rawKey);
+        const apiKey = await this.db.findApiKeyByHash(keyHash);
+
+        if (!apiKey) return null;
+        if (apiKey.revokedAt) return null;
+        if (apiKey.expiresAt && apiKey.expiresAt < new Date()) return null;
+
+        const user = await this.db.findUserById(apiKey.userId);
+        if (!user) return null;
+
+        // Update last used timestamp
+        await this.db.updateApiKeyLastUsed(apiKey.id);
+
+        return { apiKey, user };
+      },
+    };
+  }
+
+  // ─── Webhooks Namespace ────────────────────────────────────────────
+
+  private createWebhookNamespace(): WebhookNamespace {
+    return {
+      create: async (input: { url: string; events: string[]; orgId?: string }) => {
+        const secret = generateToken(32);
+
+        const webhook = await this.db.createWebhook({
+          url: input.url,
+          events: input.events,
+          secret,
+          orgId: input.orgId,
+        });
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+            subAction: 'webhook.created',
+            webhookId: webhook.id,
+          });
+        }
+
+        await this.emitter.emit('webhook.created', {
+          type: 'webhook.created',
+          webhookId: webhook.id,
+          timestamp: new Date(),
+        });
+
+        return webhook;
+      },
+
+      list: async (orgId?: string) => {
+        return this.db.listWebhooks(orgId);
+      },
+
+      update: async (id: string, updates: Partial<Webhook>) => {
+        const updated = await this.db.updateWebhook(id, updates);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+            subAction: 'webhook.updated',
+            webhookId: id,
+          });
+        }
+
+        return updated;
+      },
+
+      delete: async (id: string) => {
+        await this.db.deleteWebhook(id);
+
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+            subAction: 'webhook.deleted',
+            webhookId: id,
+          });
+        }
+
+        await this.emitter.emit('webhook.deleted', {
+          type: 'webhook.deleted',
+          webhookId: id,
+          timestamp: new Date(),
+        });
+      },
+
+      test: async (id: string) => {
+        const webhooks = await this.db.listWebhooks();
+        const webhook = webhooks.find(w => w.id === id);
+        if (!webhook) throw Errors.notFound('Webhook');
+
+        await this.emitter.emit('webhook.test', {
+          type: 'webhook.test',
+          webhookId: id,
+          timestamp: new Date(),
+        });
+      },
+    };
+  }
+}
+
+// ─── Namespace Types ──────────────────────────────────────────────────
+
+export interface OAuthNamespace {
+  getAuthorizationUrl(providerName: string, redirectUri: string): Promise<{ url: string; state: string }>;
+  handleCallback(providerName: string, code: string, state: string, context: LoginContext): Promise<AuthResponse>;
+  link(userId: string, providerName: string, code: string, redirectUri: string): Promise<void>;
+  unlink(userId: string, providerName: string): Promise<void>;
+}
+
+export interface OrgNamespace {
+  create(input: { name: string; slug: string; ownerId: string; plan?: string; settings?: Partial<OrgSettings> }): Promise<Organization>;
+  get(id: string): Promise<Organization>;
+  update(id: string, updates: Partial<Organization>): Promise<Organization>;
+  delete(id: string): Promise<void>;
+  addMember(input: { userId: string; orgId: string; role: 'owner' | 'admin' | 'member' | 'viewer' }): Promise<OrgMember>;
+  removeMember(orgId: string, userId: string): Promise<void>;
+  updateMember(orgId: string, userId: string, updates: Partial<OrgMember>): Promise<OrgMember>;
+  listMembers(orgId: string): Promise<OrgMember[]>;
+  createInvite(input: { orgId: string; email: string; role: string; invitedBy: string }): Promise<OrgInvite>;
+  acceptInvite(token: string): Promise<void>;
+  listInvites(orgId: string): Promise<OrgInvite[]>;
+  updateSettings(orgId: string, settings: Partial<OrgSettings>): Promise<Organization>;
+}
+
+export interface RoleNamespace {
+  create(role: Role): Promise<Role>;
+  get(name: string): Promise<Role>;
+  list(): Promise<Role[]>;
+  update(name: string, updates: Partial<Role>): Promise<Role>;
+  delete(name: string): Promise<void>;
+}
+
+export interface ApiKeyNamespace {
+  create(userId: string, input: { name: string; permissions: string[]; orgId?: string; expiresAt?: Date; ipAllowlist?: string[] }): Promise<{ apiKey: ApiKey; rawKey: string }>;
+  list(userId: string): Promise<ApiKey[]>;
+  revoke(id: string): Promise<void>;
+  validate(rawKey: string): Promise<{ apiKey: ApiKey; user: User } | null>;
+}
+
+export interface WebhookNamespace {
+  create(input: { url: string; events: string[]; orgId?: string }): Promise<Webhook>;
+  list(orgId?: string): Promise<Webhook[]>;
+  update(id: string, updates: Partial<Webhook>): Promise<Webhook>;
+  delete(id: string): Promise<void>;
+  test(id: string): Promise<void>;
 }
