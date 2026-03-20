@@ -422,6 +422,319 @@ export class Argus {
     });
   }
 
+  // ─── Refresh Token Pipeline ─────────────────────────────────────────
+
+  async refresh(refreshTokenValue: string): Promise<AuthResponse> {
+    // 1. Hash the provided refresh token
+    const tokenHash = hashToken(refreshTokenValue);
+
+    // 2. Look up in DB by hash
+    const token = await this.db.findRefreshTokenByHash(tokenHash);
+
+    // 3. If not found → throw
+    if (!token) {
+      throw Errors.invalidRefreshToken();
+    }
+
+    // 4. If revoked → TOKEN REUSE DETECTED
+    if (token.revoked) {
+      // a. Revoke entire token family
+      await this.db.revokeTokenFamily(token.family, 'reuse_detected');
+      // b. Revoke all sessions for user
+      await this.db.revokeAllSessions(token.userId, 'security_alert');
+      // c. Write audit
+      if (this.config.audit?.enabled) {
+        await this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
+          family: token.family,
+          generation: token.generation,
+        });
+      }
+      // d. Emit events
+      await this.emitter.emit('token.reuse_detected', {
+        userId: token.userId,
+        family: token.family,
+        timestamp: new Date(),
+      });
+      await this.emitter.emit('security.suspicious_activity', {
+        userId: token.userId,
+        type: 'token_reuse',
+        timestamp: new Date(),
+      });
+      // e. Throw
+      throw Errors.refreshTokenReuse();
+    }
+
+    // 5. If expired → throw
+    if (token.expiresAt < new Date()) {
+      throw Errors.invalidRefreshToken();
+    }
+
+    // 6. Get session, verify not revoked
+    const session = await this.db.getSession(token.sessionId);
+    if (!session || session.revoked) {
+      throw Errors.sessionExpired();
+    }
+
+    // 7. Revoke old refresh token
+    await this.db.revokeRefreshToken(token.id, 'rotated');
+
+    // 8. Generate new refresh token value, hash it
+    const newRefreshTokenRaw = generateToken(48);
+    const newRefreshTokenHash = hashToken(newRefreshTokenRaw);
+
+    // 9. Create new refresh token in DB (same family, generation + 1)
+    const sessionTimeout = this.config.session?.absoluteTimeout ?? 2592000;
+    await this.db.createRefreshToken({
+      userId: token.userId,
+      sessionId: token.sessionId,
+      tokenHash: newRefreshTokenHash,
+      family: token.family,
+      generation: token.generation + 1,
+      expiresAt: new Date(Date.now() + sessionTimeout * 1000),
+    });
+
+    // 10. Get user from DB
+    const user = await this.db.findUserById(token.userId);
+    if (!user) {
+      throw Errors.invalidRefreshToken();
+    }
+
+    // 11. Sign new access token
+    const accessTokenClaims: AccessTokenClaims = {
+      iss: 'argus',
+      sub: user.id,
+      aud: ['argus'],
+      exp: Math.floor(Date.now() / 1000) + 900,
+      iat: Math.floor(Date.now() / 1000),
+      jti: generateUUID(),
+      email: user.email,
+      emailVerified: user.emailVerified,
+      roles: user.roles,
+      permissions: user.permissions,
+      sessionId: session.id,
+    };
+    const accessToken = await this.token.signAccessToken(accessTokenClaims);
+
+    // 12. Write audit
+    if (this.config.audit?.enabled) {
+      await this.writeAudit('TOKEN_REFRESHED', user.id, null, null, {
+        sessionId: session.id,
+      });
+    }
+
+    // 13. Emit event
+    await this.emitter.emit('token.refreshed', {
+      userId: user.id,
+      sessionId: session.id,
+      timestamp: new Date(),
+    });
+
+    // 14. Return AuthResponse
+    return this.buildAuthResponse(user, accessToken, newRefreshTokenRaw, 900);
+  }
+
+  // ─── Forgot Password Pipeline ─────────────────────────────────────
+
+  async forgotPassword(email: string, ipAddress: string, userAgent?: string): Promise<void> {
+    // Normalize email
+    const normalizedEmail = email.toLowerCase();
+
+    // Find user by email — if not found, return silently (prevent enumeration)
+    const user = await this.db.findUserByEmail(normalizedEmail);
+    if (!user) {
+      return;
+    }
+
+    // Invalidate all existing reset tokens for user
+    await this.db.invalidateUserResetTokens(user.id);
+
+    // Generate reset token
+    const resetToken = generateToken(32);
+    const resetTokenHash = hashToken(resetToken);
+
+    // Store in DB with 1 hour expiry
+    await this.db.createPasswordResetToken({
+      userId: user.id,
+      tokenHash: resetTokenHash,
+      requestedFromIp: ipAddress,
+      requestedFromUa: userAgent,
+      expiresAt: new Date(Date.now() + 3600 * 1000), // 1 hour
+    });
+
+    // Send password reset email if email provider configured
+    if (this.email) {
+      await this.email.sendPasswordResetEmail(user.email, resetToken, user);
+    }
+
+    // Write audit
+    if (this.config.audit?.enabled) {
+      await this.writeAudit('PASSWORD_RESET_REQUESTED', user.id, ipAddress, userAgent ?? null, {});
+    }
+  }
+
+  // ─── Reset Password Pipeline ──────────────────────────────────────
+
+  async resetPassword(tokenValue: string, newPassword: string, ipAddress: string): Promise<void> {
+    // 1. Hash token, look up
+    const tokenHash = hashToken(tokenValue);
+    const resetToken = await this.db.findPasswordResetByHash(tokenHash);
+
+    // 2. If not found, expired, or already used → throw
+    if (!resetToken || resetToken.used || resetToken.expiresAt < new Date()) {
+      throw Errors.invalidToken();
+    }
+
+    // 3. Validate new password (min/max length)
+    const minLength = this.config.password?.minLength ?? 8;
+    const maxLength = this.config.password?.maxLength ?? 128;
+    if (newPassword.length < minLength) {
+      throw Errors.weakPassword([`Password must be at least ${minLength} characters`]);
+    }
+    if (newPassword.length > maxLength) {
+      throw Errors.weakPassword([`Password must be at most ${maxLength} characters`]);
+    }
+
+    // 4. Run password policies if configured
+    if (this.passwordPolicy) {
+      const user = await this.db.findUserById(resetToken.userId);
+      for (const policy of this.passwordPolicy) {
+        const result = await policy.validate(newPassword, { email: user?.email ?? '', displayName: user?.displayName ?? '' });
+        if (!result.valid) {
+          throw Errors.weakPassword(result.reasons, result.suggestions);
+        }
+      }
+    }
+
+    // 5. Check password history
+    const historyCount = this.config.password?.historyCount ?? 0;
+    if (historyCount > 0) {
+      const history = await this.db.getPasswordHistory(resetToken.userId, historyCount);
+      for (const oldHash of history) {
+        const matches = await this.hasher.verify(newPassword, oldHash);
+        if (matches) {
+          throw Errors.passwordRecentlyUsed();
+        }
+      }
+    }
+
+    // 6. Hash new password
+    const newPasswordHash = await this.hasher.hash(newPassword);
+
+    // Get the user to access old passwordHash
+    const user = await this.db.findUserById(resetToken.userId);
+    if (!user) {
+      throw Errors.invalidToken();
+    }
+
+    // 8. Add old passwordHash to history
+    if (user.passwordHash) {
+      await this.db.addPasswordHistory(user.id, user.passwordHash);
+    }
+
+    // 7. Update user's passwordHash
+    await this.db.updateUser(user.id, { passwordHash: newPasswordHash });
+
+    // 9. Mark reset token as used
+    await this.db.markResetTokenUsed(resetToken.id);
+
+    // 10. Revoke ALL sessions for user
+    await this.db.revokeAllSessions(user.id, 'password_change');
+
+    // 11. Revoke ALL refresh tokens for user
+    await this.db.revokeAllUserTokens(user.id, 'password_change');
+
+    // 12. Send security alert email if email provider configured
+    if (this.email) {
+      await this.email.sendSecurityAlertEmail(user.email, {
+        type: 'password_reset',
+        description: 'Your password has been reset',
+        ipAddress,
+        timestamp: new Date(),
+      }, user);
+    }
+
+    // 13. Write audit
+    if (this.config.audit?.enabled) {
+      await this.writeAudit('PASSWORD_RESET_COMPLETED', user.id, ipAddress, null, {});
+    }
+
+    // 14. Emit event
+    await this.emitter.emit('user.password_changed', {
+      userId: user.id,
+      timestamp: new Date(),
+    });
+  }
+
+  // ─── Verify Email Pipeline ────────────────────────────────────────
+
+  async verifyEmail(tokenValue: string): Promise<void> {
+    // 1. Hash token, look up
+    const tokenHash = hashToken(tokenValue);
+    const verificationToken = await this.db.findVerificationByHash(tokenHash);
+
+    // 2. If not found, expired, or used → throw
+    if (!verificationToken || verificationToken.used || verificationToken.expiresAt < new Date()) {
+      throw Errors.invalidToken();
+    }
+
+    // 3. Mark token as used
+    await this.db.markVerificationUsed(verificationToken.id);
+
+    // 4. Update user: emailVerified = true, emailVerifiedAt = now
+    await this.db.updateUser(verificationToken.userId, {
+      emailVerified: true,
+      emailVerifiedAt: new Date(),
+    });
+
+    // 5. Write audit
+    if (this.config.audit?.enabled) {
+      await this.writeAudit('EMAIL_VERIFIED', verificationToken.userId, null, null, {});
+    }
+
+    // 6. Emit event
+    await this.emitter.emit('user.email_verified', {
+      userId: verificationToken.userId,
+      timestamp: new Date(),
+    });
+  }
+
+  // ─── Resend Verification Pipeline ─────────────────────────────────
+
+  async resendVerification(userId: string): Promise<void> {
+    // 1. Get user by id
+    const user = await this.db.findUserById(userId);
+    if (!user) {
+      throw Errors.notFound('User');
+    }
+
+    // 2. If already verified, return (no-op)
+    if (user.emailVerified) {
+      return;
+    }
+
+    // 3. Generate new verification token
+    const verificationToken = generateToken(32);
+    const verificationTokenHash = hashToken(verificationToken);
+    const tokenTTL = this.config.emailVerification?.tokenTTL ?? 86400;
+
+    // 4. Store hashed in DB
+    await this.db.createEmailVerificationToken({
+      userId: user.id,
+      tokenHash: verificationTokenHash,
+      expiresAt: new Date(Date.now() + tokenTTL * 1000),
+    });
+
+    // 5. Send verification email
+    if (this.email) {
+      await this.email.sendVerificationEmail(user.email, verificationToken, user);
+    }
+
+    // 6. Write audit
+    if (this.config.audit?.enabled) {
+      await this.writeAudit('EMAIL_VERIFICATION_SENT', user.id, null, null, {});
+    }
+  }
+
   // ─── Helpers ────────────────────────────────────────────────────────
 
   private buildAuthResponse(user: User, accessToken: string, refreshToken: string, expiresIn: number): AuthResponse {
