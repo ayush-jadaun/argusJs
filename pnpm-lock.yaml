@@ -154,6 +154,22 @@ importers:
         specifier: ^3.2.0
         version: 3.2.4(@types/node@22.19.15)
 
+  packages/token-adapters/jwt-rs256:
+    dependencies:
+      '@argus/core':
+        specifier: workspace:*
+        version: link:../../core
+      jose:
+        specifier: ^6.0.0
+        version: 6.2.2
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.4(@types/node@22.19.15)
+
 packages:
 
   '@esbuild/aix-ppc64@0.27.4':
@@ -949,6 +965,9 @@ packages:
 
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
+
+  jose@6.2.2:
+    resolution: {integrity: sha512-d7kPDd34KO/YnzaDOlikGpOurfF0ByC2sEV4cANCtdqLlTfBlw2p14O/5d/zv40gJPbIQxfES3nSx1/oYNyuZQ==}
 
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
@@ -2096,6 +2115,8 @@ snapshots:
       is-extglob: 2.1.1
 
   isexe@2.0.0: {}
+
+  jose@6.2.2: {}
 
   js-tokens@9.0.1: {}
 
