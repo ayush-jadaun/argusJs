@@ -4,6 +4,13 @@ import helmet from '@fastify/helmet';
 import type { Argus } from '@argus/core';
 import { errorHandler } from './plugins/error-handler.js';
 import { requestId } from './plugins/request-id.js';
+import { authRoutes } from './routes/auth.js';
+import { passwordRoutes } from './routes/password.js';
+import { verificationRoutes } from './routes/verification.js';
+import { profileRoutes } from './routes/profile.js';
+import { sessionRoutes } from './routes/sessions.js';
+import { healthRoutes } from './routes/health.js';
+import { jwksRoutes } from './routes/jwks.js';
 
 export interface CreateAppOptions {
   argus: Argus;
@@ -30,8 +37,14 @@ export async function createApp(options: CreateAppOptions): Promise<FastifyInsta
   app.addHook('onRequest', requestId);
   app.setErrorHandler(errorHandler);
 
-  // Routes will be registered by individual route modules
-  // They are added later by importing and calling registerAuthRoutes(app), etc.
+  // Routes
+  await app.register(authRoutes);
+  await app.register(passwordRoutes);
+  await app.register(verificationRoutes);
+  await app.register(profileRoutes);
+  await app.register(sessionRoutes);
+  await app.register(healthRoutes);
+  await app.register(jwksRoutes);
 
   return app;
 }
