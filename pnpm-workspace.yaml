@@ -1,0 +1,12 @@
+packages:
+  - "packages/*"
+  - "packages/db-adapters/*"
+  - "packages/cache-adapters/*"
+  - "packages/hash-adapters/*"
+  - "packages/token-adapters/*"
+  - "packages/mfa-adapters/*"
+  - "packages/oauth-providers/*"
+  - "packages/email-adapters/*"
+  - "packages/rate-limit-adapters/*"
+  - "packages/password-policy/*"
+  - "packages/security"
