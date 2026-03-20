@@ -11,6 +11,8 @@ import { profileRoutes } from './routes/profile.js';
 import { sessionRoutes } from './routes/sessions.js';
 import { healthRoutes } from './routes/health.js';
 import { jwksRoutes } from './routes/jwks.js';
+import { adminRoutes } from './routes/admin.js';
+import { mfaRoutes } from './routes/mfa.js';
 
 export interface CreateAppOptions {
   argus: Argus;
@@ -45,6 +47,8 @@ export async function createApp(options: CreateAppOptions): Promise<FastifyInsta
   await app.register(sessionRoutes);
   await app.register(healthRoutes);
   await app.register(jwksRoutes);
+  await app.register(adminRoutes);
+  await app.register(mfaRoutes);
 
   return app;
 }
