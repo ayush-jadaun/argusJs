@@ -33,6 +33,12 @@ export interface DbAdapter {
   createRefreshToken(input: CreateRefreshTokenInput): Promise<RefreshToken>;
   findRefreshTokenByHash(hash: string): Promise<RefreshToken | null>;
   revokeRefreshToken(id: string, reason: string): Promise<void>;
+  /**
+   * Atomically revoke a refresh token only if it is not already revoked.
+   * Returns true if the token was actually revoked by this call (i.e., it was
+   * active), false if it was already revoked (concurrent rotation won the race).
+   */
+  revokeRefreshTokenIfActive(id: string, reason: string): Promise<boolean>;
   revokeTokenFamily(family: string, reason: string): Promise<void>;
   revokeAllUserTokens(userId: string, reason: string): Promise<void>;
 

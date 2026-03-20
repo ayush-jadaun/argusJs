@@ -777,6 +777,18 @@ export class PostgresAdapter implements DbAdapter {
     if (result.length === 0) throw new Error(`Refresh token ${id} not found`);
   }
 
+  async revokeRefreshTokenIfActive(id: string, reason: string): Promise<boolean> {
+    const now = new Date();
+    const result = await this.db.update(schema.refreshTokens)
+      .set({ revoked: true, revokedAt: now, revokedReason: reason })
+      .where(and(
+        eq(schema.refreshTokens.id, id),
+        eq(schema.refreshTokens.revoked, false),
+      ))
+      .returning({ id: schema.refreshTokens.id });
+    return result.length > 0;
+  }
+
   async revokeTokenFamily(family: string, reason: string): Promise<void> {
     const now = new Date();
     await this.db.update(schema.refreshTokens)

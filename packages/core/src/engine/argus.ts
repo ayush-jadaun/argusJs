@@ -140,9 +140,12 @@ export class Argus {
       throw Errors.validation([{ field: 'email', message: 'Invalid email format', code: 'invalid_format' }]);
     }
 
-    // 3. Check password length
+    // 3. Check password length and content
     const minLength = this.config.password?.minLength ?? 8;
     const maxLength = this.config.password?.maxLength ?? 128;
+    if (input.password.trim().length === 0) {
+      throw Errors.weakPassword([`Password must not be empty or whitespace-only`]);
+    }
     if (input.password.length < minLength) {
       throw Errors.weakPassword([`Password must be at least ${minLength} characters`]);
     }
@@ -517,8 +520,32 @@ export class Argus {
       throw Errors.sessionExpired();
     }
 
-    // 7. Revoke old refresh token
-    await this.db.revokeRefreshToken(token.id, 'rotated');
+    // 7. Atomically revoke old refresh token — only the first concurrent
+    //    caller wins.  If another request already revoked this token we
+    //    treat it as token reuse (same security posture as a replay).
+    const didRevoke = await this.db.revokeRefreshTokenIfActive(token.id, 'rotated');
+    if (!didRevoke) {
+      // Another concurrent refresh already consumed this token — treat as reuse
+      await this.db.revokeTokenFamily(token.family, 'reuse_detected');
+      await this.db.revokeAllSessions(token.userId, 'security_alert');
+      if (this.config.audit?.enabled) {
+        await this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
+          family: token.family,
+          generation: token.generation,
+        });
+      }
+      await this.emitter.emit('token.reuse_detected', {
+        userId: token.userId,
+        family: token.family,
+        timestamp: new Date(),
+      });
+      await this.emitter.emit('security.suspicious_activity', {
+        userId: token.userId,
+        type: 'token_reuse',
+        timestamp: new Date(),
+      });
+      throw Errors.refreshTokenReuse();
+    }
 
     // 8. Generate new refresh token value, hash it
     const newRefreshTokenRaw = generateToken(48);

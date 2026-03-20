@@ -1,3 +1,8 @@
+// Increase libuv thread pool BEFORE any imports — argon2's native addon uses
+// libuv threads, and the default pool size of 4 is a major bottleneck under load.
+import { cpus } from 'node:os';
+process.env.UV_THREADPOOL_SIZE = String(Math.max(16, cpus().length * 2));
+
 import { createApp } from './app.js';
 import { Argus } from '@argus/core';
 import { PostgresAdapter } from '@argus/db-postgres';
@@ -25,10 +30,19 @@ async function main() {
         return new MemoryCacheAdapter();
       })();
 
+  // Use lightweight Argon2 params in dev/test for fast iteration;
+  // production uses secure defaults (64MB, 3 iterations, 4 parallelism).
+  const isDev = process.env.NODE_ENV !== 'production';
+  const hasher = new Argon2Hasher(isDev ? {
+    memoryCost: 4096,    // 4MB instead of 64MB
+    timeCost: 2,         // 2 instead of 3
+    parallelism: 1,      // 1 instead of 4
+  } : undefined);        // production uses defaults
+
   const argus = new Argus({
     db: db,
     cache: cache,
-    hasher: new Argon2Hasher(),
+    hasher,
     token: new RS256TokenProvider({
       privateKey: process.env.JWT_PRIVATE_KEY || undefined,
       issuer: process.env.JWT_ISSUER || 'argus',

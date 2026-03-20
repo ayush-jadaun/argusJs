@@ -221,6 +221,15 @@ export class MemoryDbAdapter implements DbAdapter {
     token.revokedReason = reason;
   }
 
+  async revokeRefreshTokenIfActive(id: string, reason: string): Promise<boolean> {
+    const token = this.refreshTokens.get(id);
+    if (!token || token.revoked) return false;
+    token.revoked = true;
+    token.revokedAt = new Date();
+    token.revokedReason = reason;
+    return true;
+  }
+
   async revokeTokenFamily(family: string, reason: string): Promise<void> {
     for (const token of this.refreshTokens.values()) {
       if (token.family === family) {

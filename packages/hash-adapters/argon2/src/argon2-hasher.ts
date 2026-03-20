@@ -2,9 +2,11 @@ import argon2 from 'argon2';
 import type { PasswordHasher } from '@argus/core';
 
 export interface Argon2Config {
-  memoryCost?: number;    // default 65536 (64 MB)
-  timeCost?: number;      // default 3
-  parallelism?: number;   // default 4
+  memoryCost?: number;    // KB, default 65536 (64MB)
+  timeCost?: number;      // iterations, default 3
+  parallelism?: number;   // threads per hash, default 4
+  useWorkerThreads?: boolean;  // default true (uses libuv thread pool)
+  workerPoolSize?: number;     // default: number of CPU cores
 }
 
 export class Argon2Hasher implements PasswordHasher {
