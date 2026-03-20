@@ -17,6 +17,7 @@ export interface ArgusConfig {
   token: TokenProvider;
 
   mfa?: Record<string, MFAProvider>;
+  mfaEncryptionKey?: string;
   oauth?: Record<string, OAuthProviderAdapter>;
   email?: EmailProvider;
   rateLimiter?: RateLimiter;

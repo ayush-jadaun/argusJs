@@ -1,10 +1,11 @@
 import type { ArgusConfig } from '../types/config.js';
 import type { User, Session, AuditAction, Organization, OrgMember, OrgInvite, OrgSettings, ApiKey, Role, Webhook } from '../types/entities.js';
-import type { AuthResponse, UserResponse, MFAChallengeResponse, AccessTokenClaims, OAuthTokens } from '../types/responses.js';
+import type { AuthResponse, UserResponse, MFAChallengeResponse, MFASetupData, AccessTokenClaims, OAuthTokens } from '../types/responses.js';
 import type { DbAdapter } from '../interfaces/db-adapter.js';
 import type { CacheAdapter } from '../interfaces/cache-adapter.js';
 import type { PasswordHasher } from '../interfaces/password-hasher.js';
 import type { TokenProvider } from '../interfaces/token-provider.js';
+import type { MFAProvider } from '../interfaces/mfa-provider.js';
 import type { OAuthProviderAdapter } from '../interfaces/oauth-provider.js';
 import type { EmailProvider } from '../interfaces/email-provider.js';
 import type { RateLimiter } from '../interfaces/rate-limiter.js';
@@ -12,7 +13,7 @@ import type { PasswordPolicy } from '../interfaces/password-policy.js';
 import type { SecurityEngine } from '../interfaces/security-engine.js';
 import { Errors } from '../types/errors.js';
 import { ArgusEventEmitter } from './event-emitter.js';
-import { generateToken, hashToken, generateUUID } from '../utils/crypto.js';
+import { generateToken, hashToken, generateUUID, encryptAES256GCM, decryptAES256GCM } from '../utils/crypto.js';
 import { AuthorizationEngine } from './authorization.js';
 import { WebhookDispatcher } from './webhook-dispatcher.js';
 import { randomBytes, createHash } from 'node:crypto';
@@ -45,7 +46,9 @@ export class Argus {
   private readonly emitter: ArgusEventEmitter;
   private readonly authorizationEngine: AuthorizationEngine;
   private readonly webhookDispatcher: WebhookDispatcher;
+  private readonly mfaEncryptionKey: string;
 
+  public readonly mfa: MFANamespace;
   public readonly oauth: OAuthNamespace;
   public readonly orgs: OrgNamespace;
   public readonly roles: RoleNamespace;
@@ -66,7 +69,15 @@ export class Argus {
     this.authorizationEngine = new AuthorizationEngine(this.db);
     this.webhookDispatcher = new WebhookDispatcher(this.db, this.emitter);
 
+    // MFA encryption key
+    if (config.mfaEncryptionKey) {
+      this.mfaEncryptionKey = config.mfaEncryptionKey;
+    } else {
+      this.mfaEncryptionKey = randomBytes(32).toString('hex');
+    }
+
     // Initialize namespaces
+    this.mfa = this.createMFANamespace();
     this.oauth = this.createOAuthNamespace();
     this.orgs = this.createOrgNamespace();
     this.roles = this.createRoleNamespace();
@@ -821,6 +832,284 @@ export class Argus {
 
   async authorize(userId: string, action: string, context?: Record<string, unknown>): Promise<boolean> {
     return this.authorizationEngine.authorize(userId, action, context);
+  }
+
+  // ─── MFA Namespace ──────────────────────────────────────────────────
+
+  private getMFAProvider(method: string): MFAProvider {
+    const provider = this.config.mfa?.[method];
+    if (!provider) {
+      throw Errors.providerNotConfigured(method);
+    }
+    return provider;
+  }
+
+  private createMFANamespace(): MFANamespace {
+    return {
+      setup: async (userId: string, method: string): Promise<MFASetupData> => {
+        // 1. Get user, check MFA not already enabled
+        const user = await this.db.findUserById(userId);
+        if (!user) throw Errors.notFound('User');
+        if (user.mfaEnabled) throw Errors.mfaAlreadyEnabled();
+
+        // 2. Get MFA provider
+        const provider = this.getMFAProvider(method);
+
+        // 3. Generate secret
+        const setupData = await provider.generateSecret(user);
+
+        // 4. Encrypt the secret with AES-256-GCM
+        const encryptedSecret = encryptAES256GCM(setupData.secret, this.mfaEncryptionKey);
+
+        // 5. Store encrypted secret + backup codes temporarily in cache (10 min TTL)
+        const cachePayload = JSON.stringify({
+          encryptedSecret,
+          backupCodes: setupData.backupCodes,
+          method,
+        });
+        await this.cache.set(`mfa:setup:${userId}`, cachePayload, 600);
+
+        // 6. Return MFASetupData
+        return setupData;
+      },
+
+      verifySetup: async (userId: string, method: string, code: string): Promise<void> => {
+        // 1. Get the temp secret from cache
+        const cached = await this.cache.get(`mfa:setup:${userId}`);
+        if (!cached) throw Errors.invalidMfaCode();
+
+        const { encryptedSecret, backupCodes } = JSON.parse(cached) as {
+          encryptedSecret: string;
+          backupCodes: string[];
+          method: string;
+        };
+
+        // 2. Decrypt the secret
+        const secret = decryptAES256GCM(encryptedSecret, this.mfaEncryptionKey);
+
+        // 3. Verify code with provider
+        const provider = this.getMFAProvider(method);
+        const valid = await provider.verifyCode(secret, code);
+        if (!valid) throw Errors.invalidMfaCode();
+
+        // 4. Save to DB (encrypted), set user.mfaEnabled=true
+        const encryptedBackupCodes = backupCodes.map(
+          (bc: string) => encryptAES256GCM(bc, this.mfaEncryptionKey),
+        );
+        await this.db.saveMFASecret({
+          userId,
+          method,
+          encryptedSecret,
+          encryptedBackupCodes,
+          backupCodesUsed: backupCodes.map(() => false),
+        });
+        await this.db.updateUser(userId, {
+          mfaEnabled: true,
+          mfaMethods: [method],
+        });
+
+        // Clean up cache
+        await this.cache.del(`mfa:setup:${userId}`);
+
+        // 5. Write audit + emit
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('MFA_ENABLED', userId, null, null, { method });
+        }
+        await this.emitter.emit('mfa.enabled', {
+          userId,
+          method,
+          timestamp: new Date(),
+        });
+      },
+
+      verifyLogin: async (mfaToken: string, code: string, method: string, context: LoginContext): Promise<AuthResponse> => {
+        // 1. Verify MFA token to get userId
+        let userId: string;
+        try {
+          const result = await this.token.verifyMFAToken(mfaToken);
+          userId = result.userId;
+        } catch {
+          throw Errors.invalidMfaToken();
+        }
+
+        // 2. Get user + MFA secret from DB
+        const user = await this.db.findUserById(userId);
+        if (!user) throw Errors.notFound('User');
+
+        const mfaSecret = await this.db.getMFASecret(userId);
+        if (!mfaSecret) throw Errors.mfaNotEnabled();
+
+        // 3. Decrypt secret
+        const secret = decryptAES256GCM(mfaSecret.encryptedSecret, this.mfaEncryptionKey);
+
+        // 4. Check if code is a backup code
+        let isBackupCode = false;
+        for (let i = 0; i < mfaSecret.encryptedBackupCodes.length; i++) {
+          if (mfaSecret.backupCodesUsed[i]) continue;
+          const decryptedBackup = decryptAES256GCM(mfaSecret.encryptedBackupCodes[i], this.mfaEncryptionKey);
+          if (decryptedBackup === code) {
+            isBackupCode = true;
+            await this.db.markBackupCodeUsed(userId, i);
+
+            if (this.config.audit?.enabled) {
+              await this.writeAudit('BACKUP_CODE_USED', userId, context.ipAddress, context.userAgent, {
+                codeIndex: i,
+              });
+            }
+            break;
+          }
+        }
+
+        // 5. If not a backup code, verify with provider
+        if (!isBackupCode) {
+          const provider = this.getMFAProvider(method);
+          const valid = await provider.verifyCode(secret, code);
+          if (!valid) {
+            // Write audit MFA_CHALLENGE_FAILED
+            if (this.config.audit?.enabled) {
+              await this.writeAudit('MFA_CHALLENGE_FAILED', userId, context.ipAddress, context.userAgent, { method });
+            }
+            await this.emitter.emit('mfa.challenge_failed', {
+              userId,
+              method,
+              timestamp: new Date(),
+            });
+            throw Errors.invalidMfaCode();
+          }
+        }
+
+        // 6. Create session, generate tokens, return AuthResponse
+        const sessionTimeout = this.config.session?.absoluteTimeout ?? 2592000;
+        const session = await this.db.createSession({
+          userId: user.id,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          deviceFingerprint: context.deviceFingerprint,
+          expiresAt: new Date(Date.now() + sessionTimeout * 1000),
+        });
+
+        const accessTokenClaims: AccessTokenClaims = {
+          iss: 'argus',
+          sub: user.id,
+          aud: ['argus'],
+          exp: Math.floor(Date.now() / 1000) + 900,
+          iat: Math.floor(Date.now() / 1000),
+          jti: generateUUID(),
+          email: user.email,
+          emailVerified: user.emailVerified,
+          roles: user.roles,
+          permissions: user.permissions,
+          sessionId: session.id,
+        };
+        const accessToken = await this.token.signAccessToken(accessTokenClaims);
+
+        const refreshTokenRaw = generateToken(48);
+        const refreshTokenHash = hashToken(refreshTokenRaw);
+        const family = generateUUID();
+        await this.db.createRefreshToken({
+          userId: user.id,
+          sessionId: session.id,
+          tokenHash: refreshTokenHash,
+          family,
+          generation: 0,
+          expiresAt: new Date(Date.now() + sessionTimeout * 1000),
+        });
+
+        // Update user last login
+        await this.db.updateUser(user.id, {
+          lastLoginAt: new Date(),
+          lastLoginIp: context.ipAddress,
+          failedLoginAttempts: 0,
+        });
+
+        // Write audit
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('MFA_CHALLENGE_PASSED', userId, context.ipAddress, context.userAgent, { method });
+        }
+
+        // Emit events
+        await this.emitter.emit('user.login', {
+          userId: user.id,
+          sessionId: session.id,
+          ipAddress: context.ipAddress,
+          method: 'mfa',
+          timestamp: new Date(),
+        });
+
+        return this.buildAuthResponse(user, accessToken, refreshTokenRaw, 900);
+      },
+
+      disable: async (userId: string, code: string): Promise<void> => {
+        // 1. Get user + MFA secret
+        const user = await this.db.findUserById(userId);
+        if (!user) throw Errors.notFound('User');
+        if (!user.mfaEnabled) throw Errors.mfaNotEnabled();
+
+        const mfaSecret = await this.db.getMFASecret(userId);
+        if (!mfaSecret) throw Errors.mfaNotEnabled();
+
+        // 2. Decrypt + verify code
+        const secret = decryptAES256GCM(mfaSecret.encryptedSecret, this.mfaEncryptionKey);
+        const provider = this.getMFAProvider(mfaSecret.method);
+        const valid = await provider.verifyCode(secret, code);
+        if (!valid) throw Errors.invalidMfaCode();
+
+        // 3. Delete MFA secret from DB
+        await this.db.deleteMFASecret(userId);
+
+        // 4. Update user
+        await this.db.updateUser(userId, {
+          mfaEnabled: false,
+          mfaMethods: [],
+        });
+
+        // 5. Write audit + emit
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('MFA_DISABLED', userId, null, null, { method: mfaSecret.method });
+        }
+        await this.emitter.emit('mfa.disabled', {
+          userId,
+          method: mfaSecret.method,
+          timestamp: new Date(),
+        });
+      },
+
+      regenerateBackupCodes: async (userId: string, code: string): Promise<string[]> => {
+        // 1. Get user + MFA secret
+        const user = await this.db.findUserById(userId);
+        if (!user) throw Errors.notFound('User');
+        if (!user.mfaEnabled) throw Errors.mfaNotEnabled();
+
+        const mfaSecret = await this.db.getMFASecret(userId);
+        if (!mfaSecret) throw Errors.mfaNotEnabled();
+
+        // 2. Verify current code first (security)
+        const secret = decryptAES256GCM(mfaSecret.encryptedSecret, this.mfaEncryptionKey);
+        const provider = this.getMFAProvider(mfaSecret.method);
+        const valid = await provider.verifyCode(secret, code);
+        if (!valid) throw Errors.invalidMfaCode();
+
+        // 3. Generate new backup codes via provider
+        const newCodes = provider.generateBackupCodes
+          ? provider.generateBackupCodes()
+          : ['XXXX-XXXX', 'YYYY-YYYY', 'ZZZZ-ZZZZ'];
+
+        // 4. Encrypt and update in DB
+        const encryptedBackupCodes = newCodes.map(
+          (bc: string) => encryptAES256GCM(bc, this.mfaEncryptionKey),
+        );
+        await this.db.saveMFASecret({
+          userId,
+          method: mfaSecret.method,
+          encryptedSecret: mfaSecret.encryptedSecret,
+          encryptedBackupCodes,
+          backupCodesUsed: newCodes.map(() => false),
+        });
+
+        // 5. Return new codes
+        return newCodes;
+      },
+    };
   }
 
   // ─── OAuth Namespace ─────────────────────────────────────────────────
@@ -1580,6 +1869,14 @@ export class Argus {
 }
 
 // ─── Namespace Types ──────────────────────────────────────────────────
+
+export interface MFANamespace {
+  setup(userId: string, method: string): Promise<MFASetupData>;
+  verifySetup(userId: string, method: string, code: string): Promise<void>;
+  verifyLogin(mfaToken: string, code: string, method: string, context: LoginContext): Promise<AuthResponse>;
+  disable(userId: string, code: string): Promise<void>;
+  regenerateBackupCodes(userId: string, code: string): Promise<string[]>;
+}
 
 export interface OAuthNamespace {
   getAuthorizationUrl(providerName: string, redirectUri: string): Promise<{ url: string; state: string }>;
