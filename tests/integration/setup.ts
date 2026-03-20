@@ -18,7 +18,7 @@ export async function createIntegrationArgus() {
   const argus = new Argus({
     db,
     cache,
-    hasher: new Argon2Hasher({ memoryCost: 4096, timeCost: 1, parallelism: 1 }), // fast for tests
+    hasher: new Argon2Hasher({ memoryCost: 4096, timeCost: 2, parallelism: 1 }), // fast for tests (timeCost min is 2)
     token: new RS256TokenProvider({ issuer: 'test', audience: ['test'] }),
     email,
     rateLimiter: new MemoryRateLimiter(),

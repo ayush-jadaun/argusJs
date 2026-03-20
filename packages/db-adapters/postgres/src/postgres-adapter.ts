@@ -759,11 +759,10 @@ export class PostgresAdapter implements DbAdapter {
   }
 
   async findRefreshTokenByHash(hash: string): Promise<RefreshToken | null> {
+    // Must return revoked tokens too — the refresh pipeline checks revoked
+    // status to detect token reuse attacks
     const rows = await this.db.select().from(schema.refreshTokens).where(
-      and(
-        eq(schema.refreshTokens.tokenHash, hash),
-        eq(schema.refreshTokens.revoked, false),
-      )
+      eq(schema.refreshTokens.tokenHash, hash),
     ).limit(1);
     if (rows.length === 0) return null;
     return this.mapRefreshToken(rows[0]);

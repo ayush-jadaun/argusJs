@@ -345,21 +345,7 @@ export class Argus {
       };
     }
 
-    // 7. Enforce session limit
-    const maxPerUser = this.config.session?.maxPerUser ?? 5;
-    const activeSessionCount = await this.db.countActiveSessions(user.id);
-    if (activeSessionCount >= maxPerUser) {
-      const activeSessions = await this.db.getActiveSessions(user.id);
-      // Sort by createdAt ASC (oldest first)
-      activeSessions.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-      // Revoke oldest sessions until we're under the limit
-      const toRevoke = activeSessions.slice(0, activeSessionCount - maxPerUser + 1);
-      for (const session of toRevoke) {
-        await this.db.revokeSession(session.id, 'session_limit_exceeded');
-      }
-    }
-
-    // 8. Create session
+    // 7. Create session first, then enforce limit (avoids race condition under concurrency)
     const sessionTimeout = this.config.session?.absoluteTimeout ?? 2592000;
     const session = await this.db.createSession({
       userId: user.id,
@@ -396,6 +382,18 @@ export class Argus {
       generation: 0,
       expiresAt: new Date(Date.now() + sessionTimeout * 1000),
     });
+
+    // 8. Enforce session limit AFTER creating session (create-then-trim is race-safe)
+    const maxPerUser = this.config.session?.maxPerUser ?? 5;
+    const activeSessions = await this.db.getActiveSessions(user.id);
+    if (activeSessions.length > maxPerUser) {
+      // Sort by createdAt ASC (oldest first), keep the newest maxPerUser sessions
+      activeSessions.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      const toRevoke = activeSessions.slice(0, activeSessions.length - maxPerUser);
+      for (const s of toRevoke) {
+        await this.db.revokeSession(s.id, 'session_limit_exceeded');
+      }
+    }
 
     // 10. Update user
     await this.db.updateUser(user.id, {
