@@ -1,0 +1,12 @@
+node_modules
+dist
+.turbo
+.git
+.env
+*.log
+coverage
+.next
+.claude
+docs
+tests
+MASTER_PLAN.md
