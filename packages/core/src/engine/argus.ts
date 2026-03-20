@@ -735,6 +735,12 @@ export class Argus {
     }
   }
 
+  // ─── Token Verification ────────────────────────────────────────────
+
+  async verifyToken(token: string): Promise<AccessTokenClaims> {
+    return this.token.verifyAccessToken(token);
+  }
+
   // ─── Helpers ────────────────────────────────────────────────────────
 
   private buildAuthResponse(user: User, accessToken: string, refreshToken: string, expiresIn: number): AuthResponse {
