@@ -85,8 +85,8 @@ export class RS256TokenProvider implements TokenProvider {
     })
       .setProtectedHeader({ alg: 'RS256', kid: this.config.keyId })
       .setSubject(payload.sub)
-      .setIssuer(payload.iss)
-      .setAudience(payload.aud)
+      .setIssuer(this.config.issuer)
+      .setAudience(this.config.audience)
       .setIssuedAt(payload.iat)
       .setExpirationTime(payload.exp)
       .setJti(payload.jti);

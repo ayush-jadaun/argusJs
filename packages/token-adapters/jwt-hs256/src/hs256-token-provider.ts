@@ -26,9 +26,9 @@ export class HS256TokenProvider implements TokenProvider {
     const { iss, sub, aud, exp, iat, jti, ...rest } = payload;
     return new jose.SignJWT({ ...rest })
       .setProtectedHeader({ alg: 'HS256' })
-      .setIssuer(iss)
+      .setIssuer(this.config.issuer ?? 'argus')
       .setSubject(sub)
-      .setAudience(aud)
+      .setAudience(this.config.audience ?? ['argus'])
       .setExpirationTime(exp)
       .setIssuedAt(iat)
       .setJti(jti)

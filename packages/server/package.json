@@ -16,6 +16,14 @@
   },
   "dependencies": {
     "@argus/core": "workspace:*",
+    "@argus/db-postgres": "workspace:*",
+    "@argus/cache-redis": "workspace:*",
+    "@argus/cache-memory": "workspace:*",
+    "@argus/hash-argon2": "workspace:*",
+    "@argus/token-jwt-rs256": "workspace:*",
+    "@argus/email-memory": "workspace:*",
+    "@argus/ratelimit-redis": "workspace:*",
+    "@argus/ratelimit-memory": "workspace:*",
     "fastify": "^5.0.0",
     "@fastify/cors": "^10.0.0",
     "@fastify/helmet": "^13.0.0"
@@ -24,9 +32,6 @@
     "typescript": "^5.7.0",
     "vitest": "^3.2.0",
     "tsx": "^4.0.0",
-    "@argus/db-memory": "workspace:*",
-    "@argus/cache-memory": "workspace:*",
-    "@argus/ratelimit-memory": "workspace:*",
-    "@argus/email-memory": "workspace:*"
+    "@argus/db-memory": "workspace:*"
   }
 }

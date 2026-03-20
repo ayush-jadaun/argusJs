@@ -432,9 +432,33 @@ importers:
 
   packages/server:
     dependencies:
+      '@argus/cache-memory':
+        specifier: workspace:*
+        version: link:../cache-adapters/memory
+      '@argus/cache-redis':
+        specifier: workspace:*
+        version: link:../cache-adapters/redis
       '@argus/core':
         specifier: workspace:*
         version: link:../core
+      '@argus/db-postgres':
+        specifier: workspace:*
+        version: link:../db-adapters/postgres
+      '@argus/email-memory':
+        specifier: workspace:*
+        version: link:../email-adapters/memory
+      '@argus/hash-argon2':
+        specifier: workspace:*
+        version: link:../hash-adapters/argon2
+      '@argus/ratelimit-memory':
+        specifier: workspace:*
+        version: link:../rate-limit-adapters/memory
+      '@argus/ratelimit-redis':
+        specifier: workspace:*
+        version: link:../rate-limit-adapters/redis
+      '@argus/token-jwt-rs256':
+        specifier: workspace:*
+        version: link:../token-adapters/jwt-rs256
       '@fastify/cors':
         specifier: ^10.0.0
         version: 10.1.0
@@ -445,18 +469,9 @@ importers:
         specifier: ^5.0.0
         version: 5.8.2
     devDependencies:
-      '@argus/cache-memory':
-        specifier: workspace:*
-        version: link:../cache-adapters/memory
       '@argus/db-memory':
         specifier: workspace:*
         version: link:../db-adapters/memory
-      '@argus/email-memory':
-        specifier: workspace:*
-        version: link:../email-adapters/memory
-      '@argus/ratelimit-memory':
-        specifier: workspace:*
-        version: link:../rate-limit-adapters/memory
       tsx:
         specifier: ^4.0.0
         version: 4.21.0

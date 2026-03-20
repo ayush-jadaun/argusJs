@@ -16,6 +16,9 @@ export interface ArgusConfig {
   hasher: PasswordHasher;
   token: TokenProvider;
 
+  issuer?: string;
+  audience?: string[];
+
   mfa?: Record<string, MFAProvider>;
   mfaEncryptionKey?: string;
   oauth?: Record<string, OAuthProviderAdapter>;

@@ -94,7 +94,7 @@ export const Errors = {
   breachedPassword: () =>
     new ArgusError('BREACHED_PASSWORD', 'Password found in data breach database', 422),
   passwordRecentlyUsed: () =>
-    new ArgusError('PASSWORD_RECENTLY_USED', 'Cannot reuse a recent password', 422),
+    new ArgusError('PASSWORD_RECENTLY_USED', 'Password was recently used and cannot be reused', 422),
   accountLocked: (until: Date) =>
     new ArgusError('ACCOUNT_LOCKED', `Account locked until ${until.toISOString()}`, 423),
   rateLimitExceeded: (retryAfter: number) =>

@@ -47,6 +47,8 @@ export class Argus {
   private readonly authorizationEngine: AuthorizationEngine;
   private readonly webhookDispatcher: WebhookDispatcher;
   private readonly mfaEncryptionKey: string;
+  private readonly issuer: string;
+  private readonly audience: string[];
 
   public readonly mfa: MFANamespace;
   public readonly oauth: OAuthNamespace;
@@ -65,6 +67,8 @@ export class Argus {
     this.passwordPolicy = config.passwordPolicy;
     this.security = config.security;
     this.config = config;
+    this.issuer = config.issuer ?? 'argus';
+    this.audience = config.audience ?? ['argus'];
     this.emitter = new ArgusEventEmitter();
     this.authorizationEngine = new AuthorizationEngine(this.db);
     this.webhookDispatcher = new WebhookDispatcher(this.db, this.emitter);
@@ -128,7 +132,7 @@ export class Argus {
     }
 
     // Normalize email
-    const email = input.email.toLowerCase();
+    const email = input.email.trim().toLowerCase();
 
     // 2. Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -201,9 +205,9 @@ export class Argus {
     });
 
     const accessTokenClaims: AccessTokenClaims = {
-      iss: 'argus',
+      iss: this.issuer,
       sub: user.id,
-      aud: ['argus'],
+      aud: this.audience,
       exp: Math.floor(Date.now() / 1000) + 900,
       iat: Math.floor(Date.now() / 1000),
       jti: generateUUID(),
@@ -260,7 +264,7 @@ export class Argus {
     }
 
     // Normalize email
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     // 2. Find user by email
     const user = await this.db.findUserByEmail(normalizedEmail);
@@ -357,9 +361,9 @@ export class Argus {
 
     // 9. Generate access + refresh tokens
     const accessTokenClaims: AccessTokenClaims = {
-      iss: 'argus',
+      iss: this.issuer,
       sub: user.id,
-      aud: ['argus'],
+      aud: this.audience,
       exp: Math.floor(Date.now() / 1000) + 900,
       iat: Math.floor(Date.now() / 1000),
       jti: generateUUID(),
@@ -539,9 +543,9 @@ export class Argus {
 
     // 11. Sign new access token
     const accessTokenClaims: AccessTokenClaims = {
-      iss: 'argus',
+      iss: this.issuer,
       sub: user.id,
-      aud: ['argus'],
+      aud: this.audience,
       exp: Math.floor(Date.now() / 1000) + 900,
       iat: Math.floor(Date.now() / 1000),
       jti: generateUUID(),
@@ -575,7 +579,7 @@ export class Argus {
 
   async forgotPassword(email: string, ipAddress: string, userAgent?: string): Promise<void> {
     // Normalize email
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Find user by email — if not found, return silently (prevent enumeration)
     const user = await this.db.findUserByEmail(normalizedEmail);
@@ -987,9 +991,9 @@ export class Argus {
         });
 
         const accessTokenClaims: AccessTokenClaims = {
-          iss: 'argus',
+          iss: this.issuer,
           sub: user.id,
-          aud: ['argus'],
+          aud: this.audience,
           exp: Math.floor(Date.now() / 1000) + 900,
           iat: Math.floor(Date.now() / 1000),
           jti: generateUUID(),
@@ -1260,9 +1264,9 @@ export class Argus {
         });
 
         const accessTokenClaims: AccessTokenClaims = {
-          iss: 'argus',
+          iss: this.issuer,
           sub: user.id,
-          aud: ['argus'],
+          aud: this.audience,
           exp: Math.floor(Date.now() / 1000) + 900,
           iat: Math.floor(Date.now() / 1000),
           jti: generateUUID(),
