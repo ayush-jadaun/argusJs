@@ -1848,6 +1848,297 @@ git commit -m "docs: add comprehensive README with quickstart and architecture"
 
 ---
 
+## Phase 8: Performance & Load Testing
+
+### Task 41: k6 Performance Test Suite
+
+**Files:**
+- Create: `tests/k6/config.js` (shared config: base URL, thresholds, stages)
+- Create: `tests/k6/helpers/auth.js` (helper: register + login to get tokens)
+- Create: `tests/k6/scenarios/registration.js`
+- Create: `tests/k6/scenarios/login.js`
+- Create: `tests/k6/scenarios/login-mfa.js`
+- Create: `tests/k6/scenarios/token-refresh.js`
+- Create: `tests/k6/scenarios/session-management.js`
+- Create: `tests/k6/scenarios/password-reset.js`
+- Create: `tests/k6/scenarios/concurrent-sessions.js`
+- Create: `tests/k6/scenarios/mixed-realistic.js`
+- Create: `tests/k6/scenarios/brute-force-protection.js`
+- Create: `tests/k6/scenarios/rate-limiter-accuracy.js`
+- Create: `tests/k6/run-all.sh`
+- Create: `docker-compose.k6.yml` (k6 + server + postgres + redis for CI)
+
+- [ ] **Step 1: Create shared config and helpers**
+
+```javascript
+// tests/k6/config.js
+export const BASE_URL = __ENV.BASE_URL || 'http://localhost:3100';
+
+export const THRESHOLDS = {
+  http_req_duration: ['p(50)<100', 'p(95)<300', 'p(99)<500'],
+  http_req_failed: ['rate<0.01'],  // <1% error rate
+};
+
+export const STAGES_SMOKE = [
+  { duration: '10s', target: 5 },
+  { duration: '30s', target: 5 },
+  { duration: '10s', target: 0 },
+];
+
+export const STAGES_LOAD = [
+  { duration: '30s', target: 50 },
+  { duration: '2m', target: 50 },
+  { duration: '30s', target: 100 },
+  { duration: '2m', target: 100 },
+  { duration: '30s', target: 0 },
+];
+
+export const STAGES_STRESS = [
+  { duration: '1m', target: 100 },
+  { duration: '2m', target: 200 },
+  { duration: '2m', target: 500 },
+  { duration: '1m', target: 0 },
+];
+
+export const STAGES_SPIKE = [
+  { duration: '10s', target: 10 },
+  { duration: '5s', target: 500 },
+  { duration: '30s', target: 500 },
+  { duration: '10s', target: 10 },
+  { duration: '30s', target: 0 },
+];
+```
+
+- [ ] **Step 2: Registration performance test**
+
+```javascript
+// tests/k6/scenarios/registration.js
+// Metrics:
+//   - Registration p50/p95/p99 latency
+//   - Argon2id hashing time contribution
+//   - Throughput (registrations/sec)
+//   - Error rate under load
+// Thresholds:
+//   - p95 < 500ms (Argon2 is intentionally slow)
+//   - p99 < 1000ms
+//   - error rate < 1%
+```
+
+Each VU registers a unique user (unique email per iteration using `__VU` and `__ITER`). Validates response status 201, checks response body has accessToken.
+
+- [ ] **Step 3: Login performance test**
+
+```javascript
+// tests/k6/scenarios/login.js
+// Setup: pre-register 1000 users
+// Metrics:
+//   - Login p50/p95/p99 latency
+//   - Password verification time
+//   - Throughput (logins/sec)
+// Thresholds:
+//   - p95 < 300ms
+//   - p99 < 500ms
+//   - error rate < 1%
+```
+
+Setup phase creates test users. Each VU picks a random user and logs in. Validates 200 + token in response.
+
+- [ ] **Step 4: Login with MFA performance test**
+
+```javascript
+// tests/k6/scenarios/login-mfa.js
+// Two-step flow: login → MFA verify
+// Metrics: full round-trip time for MFA login
+// Thresholds:
+//   - p95 < 500ms (combined)
+```
+
+- [ ] **Step 5: Token refresh performance test**
+
+```javascript
+// tests/k6/scenarios/token-refresh.js
+// Setup: register users, get refresh tokens
+// This is the highest-frequency operation in production
+// Metrics:
+//   - Refresh p50/p95/p99
+//   - Throughput (refreshes/sec)
+// Thresholds:
+//   - p95 < 50ms (this should be FAST — Redis + JWT sign)
+//   - p99 < 100ms
+//   - error rate < 0.1%
+```
+
+- [ ] **Step 6: Session management performance test**
+
+```javascript
+// tests/k6/scenarios/session-management.js
+// GET /v1/auth/sessions — list active sessions
+// GET /v1/auth/me — profile fetch
+// DELETE /v1/auth/sessions/:id — revoke
+// Metrics: latency for each operation
+```
+
+- [ ] **Step 7: Password reset flow performance test**
+
+```javascript
+// tests/k6/scenarios/password-reset.js
+// POST /v1/auth/forgot-password → POST /v1/auth/reset-password
+// Measures full reset cycle latency
+```
+
+- [ ] **Step 8: Concurrent sessions stress test**
+
+```javascript
+// tests/k6/scenarios/concurrent-sessions.js
+// 100 VUs all logging in as the SAME user simultaneously
+// Tests:
+//   - Session limit enforcement under race conditions
+//   - No duplicate sessions created beyond maxPerUser
+//   - Oldest session correctly evicted
+// Thresholds:
+//   - Active sessions never exceed maxPerUser + 1 (race tolerance)
+```
+
+- [ ] **Step 9: Mixed realistic workload test**
+
+```javascript
+// tests/k6/scenarios/mixed-realistic.js
+// Simulates real production traffic distribution:
+//   - 85% token refresh
+//   - 10% login
+//   - 3% registration
+//   - 1% password reset
+//   - 1% profile/session management
+// Uses weighted scenarios in k6 options
+// Thresholds per operation type using custom metrics (Trend, Rate)
+```
+
+- [ ] **Step 10: Brute force protection test**
+
+```javascript
+// tests/k6/scenarios/brute-force-protection.js
+// Validates security under load:
+//   - Send 20 wrong-password logins for same account
+//   - Verify account gets locked after threshold
+//   - Verify locked account returns 423
+//   - Verify rate limit headers are present
+//   - Measure rate limiter latency overhead
+```
+
+- [ ] **Step 11: Rate limiter accuracy test**
+
+```javascript
+// tests/k6/scenarios/rate-limiter-accuracy.js
+// Send exactly N+1 requests in a window
+// Verify exactly 1 gets 429
+// Verify Retry-After header is correct
+// Verify X-RateLimit-Remaining counts down correctly
+// Test with multiple IPs (using X-Forwarded-For)
+```
+
+- [ ] **Step 12: Create docker-compose.k6.yml**
+
+```yaml
+# Dedicated compose for k6 testing
+# Services: argus-server, postgres, redis, k6
+# k6 runs as a one-shot container, exits with test result code
+```
+
+- [ ] **Step 13: Create run-all.sh**
+
+```bash
+#!/bin/bash
+# Runs all k6 scenarios sequentially
+# Outputs summary table with pass/fail per scenario
+# Exit code 1 if any scenario fails thresholds
+```
+
+- [ ] **Step 14: Commit**
+
+```bash
+git add tests/k6/ docker-compose.k6.yml
+git commit -m "test: add k6 performance test suite (11 scenarios)"
+```
+
+---
+
+### Task 42: Integration Test Hardening
+
+**Files:**
+- Create: `tests/integration/setup.ts` (shared test harness: Docker containers, migrations, cleanup)
+- Create: `tests/integration/auth-flows.test.ts`
+- Create: `tests/integration/token-rotation.test.ts`
+- Create: `tests/integration/mfa-flows.test.ts`
+- Create: `tests/integration/oauth-flows.test.ts`
+- Create: `tests/integration/security-engine.test.ts`
+- Create: `tests/integration/organization-flows.test.ts`
+- Create: `tests/integration/rbac.test.ts`
+- Create: `tests/integration/api-keys.test.ts`
+- Create: `tests/integration/webhooks.test.ts`
+- Create: `tests/integration/concurrent-access.test.ts`
+- Create: `tests/integration/data-integrity.test.ts`
+
+- [ ] **Step 1: Create shared test harness**
+
+Uses `testcontainers` to spin up PostgreSQL + Redis Docker containers per test suite. Auto-runs migrations. Provides `createTestArgus()` factory with real Postgres + Redis adapters.
+
+- [ ] **Step 2: Full auth flow integration tests**
+
+End-to-end: register → verify email → login → refresh → change password → logout. All against real Postgres + Redis. Verify DB state after each operation.
+
+- [ ] **Step 3: Token rotation integration tests**
+
+- Refresh token rotation creates new generation
+- Reuse detection across concurrent requests (race condition)
+- Family revocation cascades correctly
+- Expired token cleanup
+
+- [ ] **Step 4: MFA flow integration tests**
+
+- TOTP setup → verify → login with MFA → backup code usage
+- MFA disable flow
+- MFA with wrong codes (lockout)
+
+- [ ] **Step 5: Security engine integration tests**
+
+- Brute force lockout with real Redis counters
+- Concurrent session detection accuracy
+- Device trust persistence across sessions
+- Risk scoring with real data
+
+- [ ] **Step 6: Organization flow integration tests**
+
+- Create org → invite → accept → enforce org settings → remove member
+- Org auth policy enforcement (mandatory MFA, IP allowlist, session timeout)
+
+- [ ] **Step 7: RBAC integration tests**
+
+- Role inheritance resolution
+- Permission checks with nested roles
+- ABAC policy evaluation with conditions
+
+- [ ] **Step 8: Concurrent access tests**
+
+- Two sessions refreshing the same token simultaneously (only one should win)
+- Registration with same email from two requests (only one should succeed)
+- Session limit enforcement under concurrent logins
+
+- [ ] **Step 9: Data integrity tests**
+
+- Soft delete cascading (deleted user's sessions, tokens, etc.)
+- Password history preservation
+- Audit log completeness (every action logged)
+- GDPR export contains all user data
+
+- [ ] **Step 10: Commit**
+
+```bash
+git add tests/integration/
+git commit -m "test: add comprehensive integration test suite (12 test files)"
+```
+
+---
+
 ## Summary
 
 | Phase | Tasks | What's testable after |
@@ -1859,5 +2150,6 @@ git commit -m "docs: add comprehensive README with quickstart and architecture"
 | 5 | 24-29 | MFA (TOTP, WebAuthn, SMS), OAuth (6 providers), Security Engine |
 | 6 | 30-35 | Enterprise features: orgs, RBAC, API keys, webhooks, password policies |
 | 7 | 36-40 | Dashboard, Client SDK, Docker, CI/CD, README |
+| 8 | 41-42 | k6 perf tests (11 scenarios) + hardened integration tests (12 suites) |
 
-**Total: 40 tasks, ~60+ endpoints, 42 packages, 18 DB tables.**
+**Total: 42 tasks, ~60+ endpoints, 42 packages, 18 DB tables, 11 k6 scenarios, 12 integration suites.**
