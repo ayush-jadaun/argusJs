@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  k6:
+    image: grafana/k6:latest
+    volumes:
+      - ./tests/k6:/scripts
+    environment:
+      - BASE_URL=http://argus-server:3100
+    depends_on:
+      argus-server:
+        condition: service_healthy
+    command: run /scripts/scenarios/registration.js
+
+  argus-server:
+    build: .
+    environment:
+      DATABASE_URL: postgres://argus:argus@postgres:5432/argus
+      REDIS_URL: redis://redis:6379
+      PORT: 3100
+      HOST: 0.0.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3100/v1/health']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: argus
+      POSTGRES_PASSWORD: argus
+      POSTGRES_DB: argus
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U argus']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
