@@ -1,6 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import compress from '@fastify/compress';
 import type { Argus } from '@argus/core';
 import { errorHandler } from './plugins/error-handler.js';
 import { requestId } from './plugins/request-id.js';
@@ -34,6 +35,7 @@ export async function createApp(options: CreateAppOptions): Promise<FastifyInsta
   // Plugins
   await app.register(cors, { origin: options.cors?.origin ?? true });
   await app.register(helmet, { contentSecurityPolicy: false });
+  await app.register(compress, { threshold: 1024 }); // compress responses > 1KB
 
   // Custom plugins
   app.addHook('onRequest', requestId);

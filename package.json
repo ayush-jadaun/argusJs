@@ -9,7 +9,10 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "start": "node packages/server/dist/server.js",
+    "start:cluster": "node packages/server/dist/cluster.js",
+    "start:dev": "NODE_ENV=development node packages/server/dist/server.js"
   },
   "devDependencies": {
     "turbo": "^2.8.0",

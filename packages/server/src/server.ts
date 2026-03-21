@@ -21,7 +21,12 @@ async function main() {
     process.exit(1);
   }
 
-  const db = new PostgresAdapter({ connectionString: databaseUrl });
+  const db = new PostgresAdapter({
+    connectionString: databaseUrl,
+    max: parseInt(process.env.DB_POOL_MAX || '20', 10),
+    idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT || '30', 10),
+    connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT || '10', 10),
+  });
   const cache = redisUrl
     ? new RedisCacheAdapter({ url: redisUrl })
     : await (async () => {
@@ -66,11 +71,36 @@ async function main() {
   await app.listen({ port, host });
   console.log(`ArgusJS server running on http://${host}:${port}`);
 
+  // Graceful shutdown with in-flight request draining
+  let shuttingDown = false;
+
+  app.addHook('onRequest', async (request, reply) => {
+    if (shuttingDown) {
+      reply.code(503).send({ error: 'Service is shutting down' });
+    }
+  });
+
   const shutdown = async () => {
-    console.log('Shutting down...');
-    await app.close();
-    await argus.shutdown();
-    process.exit(0);
+    if (shuttingDown) return; // prevent double shutdown
+    shuttingDown = true;
+    console.log('Shutting down gracefully...');
+
+    // Force-kill timeout: if graceful shutdown takes too long, force exit
+    const forceKillTimer = setTimeout(() => {
+      console.error('Graceful shutdown timed out after 30s, forcing exit');
+      process.exit(1);
+    }, 30000);
+    forceKillTimer.unref(); // don't keep process alive just for this timer
+
+    try {
+      await app.close(); // Fastify drains in-flight requests
+      await argus.shutdown();
+      console.log('Shutdown complete');
+      process.exit(0);
+    } catch (err) {
+      console.error('Error during shutdown:', err);
+      process.exit(1);
+    }
   };
 
   process.on('SIGTERM', shutdown);

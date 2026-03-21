@@ -4,7 +4,12 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -15,23 +20,24 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@argus/cache-memory": "workspace:*",
+    "@argus/cache-redis": "workspace:*",
     "@argus/core": "workspace:*",
     "@argus/db-postgres": "workspace:*",
-    "@argus/cache-redis": "workspace:*",
-    "@argus/cache-memory": "workspace:*",
-    "@argus/hash-argon2": "workspace:*",
-    "@argus/token-jwt-rs256": "workspace:*",
     "@argus/email-memory": "workspace:*",
-    "@argus/ratelimit-redis": "workspace:*",
+    "@argus/hash-argon2": "workspace:*",
     "@argus/ratelimit-memory": "workspace:*",
-    "fastify": "^5.0.0",
+    "@argus/ratelimit-redis": "workspace:*",
+    "@argus/token-jwt-rs256": "workspace:*",
+    "@fastify/compress": "^8.3.1",
     "@fastify/cors": "^10.0.0",
-    "@fastify/helmet": "^13.0.0"
+    "@fastify/helmet": "^13.0.0",
+    "fastify": "^5.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "vitest": "^3.2.0",
+    "@argus/db-memory": "workspace:*",
     "tsx": "^4.0.0",
-    "@argus/db-memory": "workspace:*"
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
   }
 }

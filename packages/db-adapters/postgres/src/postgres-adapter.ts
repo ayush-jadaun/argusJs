@@ -22,6 +22,12 @@ export interface PostgresAdapterConfig {
   database?: string;
   user?: string;
   password?: string;
+  /** Maximum number of connections in the pool (default: 10) */
+  max?: number;
+  /** Seconds before an idle connection is closed (default: 30) */
+  idleTimeout?: number;
+  /** Seconds to wait for a new connection (default: 10) */
+  connectTimeout?: number;
 }
 
 export class PostgresAdapter implements DbAdapter {
@@ -34,8 +40,14 @@ export class PostgresAdapter implements DbAdapter {
   }
 
   async init(): Promise<void> {
+    const poolOptions = {
+      max: this.config.max ?? 10,
+      idle_timeout: this.config.idleTimeout ?? 30,
+      connect_timeout: this.config.connectTimeout ?? 10,
+    };
+
     if (this.config.connectionString) {
-      this.client = postgres(this.config.connectionString, { max: 10 });
+      this.client = postgres(this.config.connectionString, poolOptions);
     } else {
       this.client = postgres({
         host: this.config.host ?? 'localhost',
@@ -43,7 +55,7 @@ export class PostgresAdapter implements DbAdapter {
         database: this.config.database ?? 'postgres',
         user: this.config.user ?? 'postgres',
         password: this.config.password ?? 'postgres',
-        max: 10,
+        ...poolOptions,
       });
     }
 
