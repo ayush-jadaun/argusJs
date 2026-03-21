@@ -1,0 +1,91 @@
+version: '3.8'
+
+# Head-to-head benchmark: ArgusJS vs Keycloak vs FusionAuth
+# All running against the same Postgres + Redis infrastructure
+
+services:
+  # ========================
+  # SHARED INFRASTRUCTURE
+  # ========================
+  postgres-bench:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bench
+      POSTGRES_PASSWORD: bench
+      POSTGRES_DB: bench
+    ports:
+      - "5450:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bench"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    tmpfs:
+      - /var/lib/postgresql/data  # RAM disk for max speed
+
+  redis-bench:
+    image: redis:7-alpine
+    ports:
+      - "6399:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  # ========================
+  # KEYCLOAK (Competitor #1)
+  # ========================
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-bench:5432/bench
+      KC_DB_USERNAME: bench
+      KC_DB_PASSWORD: bench
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres-bench:
+        condition: service_healthy
+
+  # ========================
+  # FUSIONAUTH (Competitor #2)
+  # ========================
+  fusionauth-search:
+    image: opensearchproject/opensearch:2.11.0
+    environment:
+      - cluster.name=fusionauth
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx256m"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9200"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  fusionauth:
+    image: fusionauth/fusionauth-app:latest
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres-bench:5432/bench
+      DATABASE_ROOT_USERNAME: bench
+      DATABASE_ROOT_PASSWORD: bench
+      DATABASE_USERNAME: bench
+      DATABASE_PASSWORD: bench
+      FUSIONAUTH_APP_MEMORY: 512M
+      SEARCH_SERVERS: http://fusionauth-search:9200
+      SEARCH_TYPE: elasticsearch
+      FUSIONAUTH_APP_URL: http://fusionauth:9011
+    ports:
+      - "9011:9011"
+    depends_on:
+      postgres-bench:
+        condition: service_healthy
+      fusionauth-search:
+        condition: service_healthy
