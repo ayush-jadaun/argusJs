@@ -27,6 +27,7 @@ graph TB
     subgraph "Required Adapters"
         DB["DbAdapter<br/>postgres | memory"]
         Cache["CacheAdapter<br/>redis | memory"]
+        SessionCache["Session Cache<br/>(Redis, invalidated on revoke)"]
         Hash["PasswordHasher<br/>argon2 | bcrypt | scrypt"]
         Token["TokenProvider<br/>rs256 | es256 | hs256"]
     end
@@ -52,6 +53,7 @@ graph TB
 
     Core --> DB
     Core --> Cache
+    Cache --> SessionCache
     Core --> Hash
     Core --> Token
     Core -.-> Email
@@ -90,7 +92,7 @@ class Argus {
 
     // Configuration objects
     password?: { minLength?; maxLength?; historyCount? };
-    session?: { maxPerUser?; absoluteTimeout?; inactivityTimeout? };
+    session?: { maxPerUser?; absoluteTimeout?; inactivityTimeout?; rotateRefreshTokens?; cacheRefreshTokens?; refreshTokenCacheTTL? };
     lockout?: { maxAttempts?; duration?; captchaThreshold? };
     // ...
   });
@@ -119,7 +121,7 @@ RegisterInput { email, password, displayName, ipAddress, userAgent }
 12. Create session in DB
 13. Sign JWT access token (15 min TTL)
 14. Generate refresh token (48 random bytes), store hash + family in DB
-15. Write audit log (USER_REGISTERED)
+15. Write audit log (USER_REGISTERED) -- buffered via async batching (flushed every 1s or 50 entries)
 16. Emit 'user.registered' event
 17. Execute afterRegister hook (if configured)
     |
@@ -165,14 +167,16 @@ AuthResponse { user, accessToken, refreshToken, expiresIn, tokenType }
 
 ### Token Refresh Pipeline
 
+Token rotation is configurable via `session.rotateRefreshTokens` (default: `true`). When rotation is disabled, steps 4, 7, 8, and 9 are skipped -- the same refresh token is reused until expiry. When `session.cacheRefreshTokens` is enabled, step 2 checks Redis first before falling back to PostgreSQL.
+
 ```
 RefreshInput { refreshToken }
     |
     v
 1. Hash the provided refresh token (SHA-256)
-2. Look up token in DB by hash
+2. Look up token in DB by hash (or Redis cache if cacheRefreshTokens is enabled)
 3. NOT FOUND -> throw INVALID_REFRESH_TOKEN
-4. REVOKED -> TOKEN REUSE DETECTED:
+4. REVOKED -> TOKEN REUSE DETECTED (only when rotateRefreshTokens is true):
     a. Revoke entire token family
     b. Revoke all user sessions (security alert)
     c. Write audit TOKEN_REUSE_DETECTED
@@ -180,20 +184,20 @@ RefreshInput { refreshToken }
     e. Throw REFRESH_TOKEN_REUSE_DETECTED
 5. EXPIRED -> throw INVALID_REFRESH_TOKEN
 6. Verify session is not revoked
-7. ATOMIC: revokeRefreshTokenIfActive(id, 'rotated')
+7. ATOMIC: revokeRefreshTokenIfActive(id, 'rotated') (skipped when rotation is off)
     |-- Returns false (another request already consumed it):
     |   Treat as token reuse (same as step 4)
     |
     v (token successfully consumed)
-8. Generate new refresh token (same family, generation + 1)
-9. Store new token hash in DB
-10. Fetch user from DB
+8. Generate new refresh token (same family, generation + 1) (skipped when rotation is off)
+9. Store new token hash in DB (skipped when rotation is off)
+10. Fetch user from DB (or user cache if available, 5-min TTL)
 11. Sign new access token
-12. Write audit TOKEN_REFRESHED
+12. Write audit TOKEN_REFRESHED (buffered via async batching)
 13. Emit 'token.refreshed' event
     |
     v
-AuthResponse { user, accessToken, refreshToken (new), expiresIn, tokenType }
+AuthResponse { user, accessToken, refreshToken (new or same), expiresIn, tokenType }
 ```
 
 ### MFA Verification Pipeline
@@ -296,6 +300,12 @@ ArgusJS enforces a maximum number of concurrent sessions per user (default: 5). 
 3. If over the limit, revoke the oldest sessions (FIFO).
 
 This is race-safe: even under concurrent logins, each creates a session and then trims independently. The worst case is momentarily exceeding the limit by 1-2 sessions, which get cleaned up immediately.
+
+### Session and User Caching
+
+Sessions are cached in Redis on creation and invalidated when revoked (logout, security alert, session limit exceeded). This avoids a PostgreSQL round-trip for session validation on authenticated requests.
+
+User records are also cached in Redis with a 5-minute TTL. The cache is invalidated whenever a user is updated (profile change, role change, password change, etc.), ensuring stale data does not persist.
 
 ### Session Fields
 

@@ -39,6 +39,9 @@ async function main() {
       maxPerUser: 5,
       absoluteTimeout: 2592000, // 30 days
       inactivityTimeout: 86400, // 24 hours
+      rotateRefreshTokens: true, // rotate refresh token on every refresh (default: true)
+      cacheRefreshTokens: false, // cache refresh token lookups in Redis (default: false)
+      refreshTokenCacheTTL: 30,  // cache TTL in seconds when caching is enabled (default: 30)
     },
     lockout: {
       maxAttempts: 10,

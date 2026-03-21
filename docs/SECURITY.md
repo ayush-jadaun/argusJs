@@ -128,6 +128,45 @@ This uses PostgreSQL's row-level locking to ensure only one transaction can flip
 
 The in-memory adapter uses a similar atomic check-and-set pattern.
 
+## Configurable Token Rotation
+
+Token rotation is enabled by default (`rotateRefreshTokens: true`) because it provides the strongest protection against refresh token theft. However, it can be disabled for use cases where reuse detection is not needed.
+
+### Rotation ON (default)
+
+- Every refresh revokes the old token and issues a new one
+- Stolen tokens are detected immediately when the legitimate user refreshes
+- Reuse triggers revocation of all sessions (security alert)
+- Two DB writes per refresh (revoke + insert)
+
+This is the recommended setting for any application handling user data. The default is ON because the security benefit (instant theft detection) far outweighs the cost (~15ms additional latency per refresh).
+
+### Rotation OFF
+
+- The same refresh token is reused until it expires
+- No reuse detection -- a stolen token remains valid for its full lifetime (up to 30 days)
+- Zero DB writes per refresh (only a read to validate)
+- Matches Keycloak's default behavior
+
+Use this only for internal tools, server-to-server flows, or prototypes where token theft risk is minimal.
+
+```typescript
+session: {
+  rotateRefreshTokens: false, // disable rotation (Keycloak-style)
+}
+```
+
+## Refresh Token Cache Security Window
+
+When `cacheRefreshTokens` is enabled, refresh token lookups are served from Redis instead of PostgreSQL. This introduces a security window equal to `refreshTokenCacheTTL` (default: 30 seconds) during which a revoked token could still be considered valid by the cache.
+
+**The attack scenario:** A token is revoked in the database (e.g., via logout or session termination), but the cached copy in Redis has not yet expired. During this window, the revoked token can still be used to obtain a new access token.
+
+**Mitigation:**
+- Keep `refreshTokenCacheTTL` short (5-10 seconds for sensitive apps)
+- Session revocation also invalidates the session cache, limiting the blast radius
+- For maximum security, leave caching OFF (`cacheRefreshTokens: false`, the default)
+
 ## Brute Force Protection
 
 ### Account Lockout

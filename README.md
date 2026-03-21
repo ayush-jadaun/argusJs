@@ -45,6 +45,7 @@ ArgusJS is a complete, self-hosted authentication and authorization platform bui
 - **Webhooks** -- event-driven webhook subscriptions with HMAC signing
 - **Admin impersonation** -- impersonate users for support (fully audited)
 - **Audit logging** -- every security-relevant action logged with retention policies
+- **Configurable security/performance trade-offs** -- toggle token rotation, caching, Argon2 tuning per deployment
 - **GDPR compliance** -- data export, account deletion, right to be forgotten
 
 ### Multi-Factor Authentication
@@ -335,9 +336,12 @@ const argus = new Argus({
   },
 
   session: {
-    maxPerUser: 5,          // max concurrent sessions per user
-    absoluteTimeout: 2592000, // 30 days in seconds
-    inactivityTimeout: 86400, // 24 hours in seconds
+    maxPerUser: 5,              // max concurrent sessions per user
+    absoluteTimeout: 2592000,   // 30 days in seconds
+    inactivityTimeout: 86400,   // 24 hours in seconds
+    rotateRefreshTokens: true,  // rotate refresh token on every refresh (default: true)
+    cacheRefreshTokens: false,  // cache refresh token lookups in Redis (default: false)
+    refreshTokenCacheTTL: 30,   // cache TTL in seconds when caching is enabled (default: 30)
   },
 
   lockout: {
@@ -383,11 +387,25 @@ Benchmarks from k6 load tests against a single ArgusJS instance (Node.js 20, Pos
 | Registration (dev) | 230 | 125 ms | 200 ms | 350 ms | Lightweight Argon2 (4 MB) |
 | Registration (prod) | 33 | 1,328 ms | 1,850 ms | 2,100 ms | Full Argon2 (64 MB, 3 iter) |
 
+ArgusJS includes three pre-tuned **performance profiles** (Max Security, Balanced, Max Speed) that let you trade security for throughput. See [Performance Profiles](#performance-profiles) below and the [Trade-offs Guide](docs/TRADEOFFS.md) for details.
+
 **Scaling notes:**
 - These numbers are per single Node.js instance. Use `node cluster.js` for multi-core scaling (linear throughput gain).
 - Set `UV_THREADPOOL_SIZE` to at least `16` or `cpu_count * 2` to prevent Argon2 thread starvation (the server does this automatically).
 - Production Argon2 is intentionally slow -- 1.3 seconds per hash is the security target, not a bottleneck to optimize away.
 - Horizontal scaling is straightforward: all state is in PostgreSQL + Redis, so you can run N instances behind a load balancer.
+
+## Performance Profiles
+
+ArgusJS ships with three recommended performance profiles. Each profile adjusts token rotation, refresh token caching, and Argon2 hashing parameters.
+
+| Profile | Token Rotation | Refresh Cache | Argon2 | Best For |
+|---------|---------------|---------------|--------|----------|
+| **Max Security** (default) | ON | OFF | 64 MB, 3 iter | Banking, healthcare, fintech |
+| **Balanced** | ON | 10s TTL | 19 MB, 2 iter | SaaS, e-commerce, social |
+| **Max Speed** | OFF | 60s TTL | 4 MB, 2 iter | Internal tools, MVPs, prototypes |
+
+See [docs/TRADEOFFS.md](docs/TRADEOFFS.md) for full benchmark numbers, security implications, and configuration examples for each profile.
 
 ## Comparison
 
@@ -690,6 +708,7 @@ pnpm start:cluster
 - [API Reference](docs/API.md) -- Complete REST API with examples
 - [Security](docs/SECURITY.md) -- Hashing, token reuse detection, OWASP compliance
 - [Performance](docs/PERFORMANCE.md) -- Benchmarks, scaling, capacity planning
+- [Trade-offs](docs/TRADEOFFS.md) -- Security vs performance profiles, configurable options
 - [Deployment](docs/DEPLOYMENT.md) -- Docker, Kubernetes, environment variables
 - [Testing](docs/TESTING.md) -- Test strategy, running tests, writing custom tests
 

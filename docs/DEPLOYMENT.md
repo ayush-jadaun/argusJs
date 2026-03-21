@@ -318,8 +318,9 @@ Memory is important because Argon2 uses 64 MB per concurrent hash. With `UV_THRE
 | `DB_POOL_MAX` | No | `20` | PostgreSQL connection pool size |
 | `DB_IDLE_TIMEOUT` | No | `30` | Idle connection timeout (seconds) |
 | `DB_CONNECT_TIMEOUT` | No | `10` | Connection timeout (seconds) |
+| `ROTATE_REFRESH_TOKENS` | No | `true` | Set to `false` to disable refresh token rotation (Keycloak-style reuse) |
 | `CLUSTER_WORKERS` | No | CPU count | Number of cluster workers |
-| `UV_THREADPOOL_SIZE` | No | Auto (max(16, cpus*2)) | libuv thread pool size (set by server) |
+| `UV_THREADPOOL_SIZE` | No | Auto (max(16, cpus*2)) | libuv thread pool size (set automatically by server.ts at startup) |
 | `SENDGRID_API_KEY` | No | -- | SendGrid API key |
 | `SMTP_HOST` | No | -- | SMTP server hostname |
 | `SMTP_PORT` | No | `587` | SMTP server port |
@@ -414,3 +415,4 @@ SIGTERM received
 - [ ] Enable audit logging (`audit.enabled: true`)
 - [ ] Back up the `MFA_ENCRYPTION_KEY` and `JWT_PRIVATE_KEY` securely
 - [ ] Test graceful shutdown in your orchestrator
+- [ ] Choose a performance profile (Max Security, Balanced, or Max Speed) -- see [docs/TRADEOFFS.md](TRADEOFFS.md)

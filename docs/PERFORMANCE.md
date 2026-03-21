@@ -178,13 +178,51 @@ Rough estimates for a production deployment:
 - Token refresh happens every 15 minutes per active session but is cheap (176 req/s per instance).
 - The bottleneck is almost always Argon2 hashing, not database or network I/O.
 
+## Configurable Performance Knobs
+
+ArgusJS exposes several settings that allow you to trade security for speed (or vice versa). These are configured in the `session` and `hasher` options.
+
+### Refresh Token Rotation (`rotateRefreshTokens`)
+
+When enabled (default), every token refresh revokes the old token and creates a new one -- two DB writes per refresh. Disabling rotation (`rotateRefreshTokens: false`) eliminates those writes and reuses the same token until expiry (Keycloak-style). See [docs/TRADEOFFS.md](docs/TRADEOFFS.md) for security implications.
+
+### Refresh Token Caching (`cacheRefreshTokens`)
+
+When enabled, refresh token lookups are cached in Redis instead of hitting PostgreSQL every time. The cache TTL is controlled by `refreshTokenCacheTTL` (default: 30 seconds). This reduces refresh latency from ~5ms (Postgres) to ~1ms (Redis) but introduces a revocation delay window equal to the TTL.
+
+### Argon2 Tuning
+
+Argon2 `memoryCost`, `timeCost`, and `parallelism` directly control registration and login latency. OWASP recommends at least 19 MB / 2 iterations as the minimum. See the "Why Argon2id is Slow" section above and [docs/TRADEOFFS.md](docs/TRADEOFFS.md) for profile-specific tuning.
+
+### Session Caching
+
+Sessions are cached in Redis on creation and invalidated on revocation. This avoids a PostgreSQL round-trip on every authenticated request that needs to verify the session. The cache is automatically kept consistent: when a session is revoked (logout, security alert, etc.), the cached entry is deleted.
+
+### Audit Log Batching
+
+Audit log entries are written asynchronously using a buffer-and-flush strategy. Entries accumulate in an in-memory buffer and are flushed to the database either every 1 second or when the buffer reaches 50 entries, whichever comes first. This reduces write amplification and keeps the hot path (login, refresh) fast without losing audit data.
+
+## Performance Profiles
+
+ArgusJS offers three recommended profiles that combine the knobs above:
+
+| Profile | Rotation | Cache | Argon2 | Token Refresh p50 | Registration p50 |
+|---------|----------|-------|--------|-------------------|-------------------|
+| **Max Security** | ON | OFF | 64 MB, 3 iter | 15 ms | 666 ms |
+| **Balanced** | ON | 10s TTL | 19 MB, 2 iter | ~15 ms | ~350 ms |
+| **Max Speed** | OFF | 60s TTL | 4 MB, 2 iter | 17 ms | 84 ms |
+
+For full configuration examples and security trade-off analysis, see [docs/TRADEOFFS.md](docs/TRADEOFFS.md).
+
 ## Comparison with Other Systems
 
 | System | Login Throughput (single instance) | Notes |
 |--------|-----------------------------------|-------|
 | ArgusJS | 179 req/s | Argon2id (64 MB), Node.js |
-| Keycloak | ~100-200 req/s | bcrypt, Java/Quarkus |
+| Keycloak 26 | ~100-200 req/s | bcrypt, Java/Quarkus |
 | Auth0 | N/A (SaaS) | Rate limits vary by plan |
 | Supabase Auth | ~100-300 req/s | bcrypt, Go |
+
+Head-to-head benchmarks against Keycloak 26 are available in the `benchmarks/` directory. Run `bash benchmarks/run-comparison.sh` to reproduce.
 
 These comparisons are approximate and depend heavily on hashing parameters, hardware, and configuration. The key insight is that auth server throughput is dominated by the hashing algorithm, not the framework.

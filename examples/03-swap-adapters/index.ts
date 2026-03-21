@@ -31,6 +31,11 @@ const tokenB = new ES256TokenProvider({ issuer: 'my-app', audience: ['my-app'] }
 import { HS256TokenProvider } from '@argus/token-jwt-hs256';
 const tokenC = new HS256TokenProvider({ secret: 'my-secret-at-least-32-chars-long!!', issuer: 'my-app', audience: ['my-app'] });
 
+// === SWAP REFRESH TOKEN BEHAVIOR ===
+// Token rotation is also configurable — pass rotateRefreshTokens: false in the session
+// config to reuse the same refresh token (Keycloak-style) instead of rotating on every refresh.
+// See docs/TRADEOFFS.md for security implications.
+
 async function main() {
   // Mix and match — use bcrypt with ES256 tokens:
   const argus = new Argus({

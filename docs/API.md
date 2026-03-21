@@ -228,6 +228,8 @@ Exchange a refresh token for a new access token + refresh token pair (rotation).
 }
 ```
 
+> **Note:** When `rotateRefreshTokens` is set to `false`, the `refreshToken` field in the response will be the same value as the input token (the token is reused, not rotated). When rotation is enabled (the default), a new refresh token is issued and the old one is revoked.
+
 **Errors:** `INVALID_REFRESH_TOKEN`, `REFRESH_TOKEN_REUSE_DETECTED`, `SESSION_EXPIRED`
 
 ---
