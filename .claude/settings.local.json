@@ -7,7 +7,15 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm --filter @argus/email-smtp test)",
       "Bash(pnpm test:*)",
-      "Bash(pnpm run:*)"
+      "Bash(pnpm run:*)",
+      "Bash(DATABASE_URL=\"postgres://postgres:postgres@localhost:5434/postgres\" REDIS_URL=\"redis://localhost:6381\" npx vitest run tests/integration/edge-cases.test.ts --config tests/integration/vitest.config.ts)",
+      "Bash(DATABASE_URL=\"postgres://postgres:postgres@localhost:5434/postgres\" REDIS_URL=\"redis://localhost:6381\" npx vitest run tests/integration/ --config tests/integration/vitest.config.ts)",
+      "Bash(k6 run:*)",
+      "Bash(DATABASE_URL=\"postgres://postgres:postgres@localhost:5434/postgres\" REDIS_URL=\"redis://localhost:6381\" npx vitest run tests/integration/battle-test.test.ts --config tests/integration/vitest.config.ts)",
+      "Bash(pnpm turbo:*)",
+      "Bash(DATABASE_URL=\"postgres://postgres:postgres@localhost:5434/postgres\" REDIS_URL=\"redis://localhost:6381\" timeout 8 node packages/server/dist/server.js)",
+      "Bash(cd:*)",
+      "Bash(taskkill //F //IM node.exe)"
     ]
   }
 }

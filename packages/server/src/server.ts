@@ -68,17 +68,17 @@ async function main() {
   const port = parseInt(process.env.PORT || '3100', 10);
   const host = process.env.HOST || '0.0.0.0';
 
-  await app.listen({ port, host });
-  console.log(`ArgusJS server running on http://${host}:${port}`);
-
   // Graceful shutdown with in-flight request draining
   let shuttingDown = false;
 
-  app.addHook('onRequest', async (request, reply) => {
+  app.addHook('onRequest', async (_request, reply) => {
     if (shuttingDown) {
       reply.code(503).send({ error: 'Service is shutting down' });
     }
   });
+
+  await app.listen({ port, host });
+  console.log(`ArgusJS server running on http://${host}:${port}`);
 
   const shutdown = async () => {
     if (shuttingDown) return; // prevent double shutdown
