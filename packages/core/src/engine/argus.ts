@@ -1,5 +1,5 @@
 import type { ArgusConfig } from '../types/config.js';
-import type { User, Session, AuditAction, Organization, OrgMember, OrgInvite, OrgSettings, ApiKey, Role, Webhook } from '../types/entities.js';
+import type { User, Session, AuditAction, AuditLogEntry, Organization, OrgMember, OrgInvite, OrgSettings, ApiKey, Role, Webhook } from '../types/entities.js';
 import type { AuthResponse, UserResponse, MFAChallengeResponse, MFASetupData, AccessTokenClaims, OAuthTokens } from '../types/responses.js';
 import type { DbAdapter } from '../interfaces/db-adapter.js';
 import type { CacheAdapter } from '../interfaces/cache-adapter.js';
@@ -49,6 +49,12 @@ export class Argus {
   private readonly mfaEncryptionKey: string;
   private readonly issuer: string;
   private readonly audience: string[];
+
+  // Audit log batching
+  private auditBuffer: AuditLogEntry[] = [];
+  private auditFlushTimer: ReturnType<typeof setInterval> | null = null;
+  private auditFlushInterval = 1000; // flush every 1 second
+  private auditBatchSize = 50;       // or when buffer reaches 50 entries
 
   public readonly mfa: MFANamespace;
   public readonly oauth: OAuthNamespace;
@@ -108,9 +114,17 @@ export class Argus {
       }
     }
     this.webhookDispatcher.init();
+    this.startAuditFlusher();
   }
 
   async shutdown(): Promise<void> {
+    // Stop audit flusher and drain remaining entries
+    if (this.auditFlushTimer) {
+      clearInterval(this.auditFlushTimer);
+      this.auditFlushTimer = null;
+    }
+    await this.flushAuditLog();
+
     await this.db.shutdown();
     await this.cache.shutdown();
     if (this.token.shutdown) await this.token.shutdown();
@@ -207,6 +221,10 @@ export class Argus {
       expiresAt: new Date(Date.now() + sessionTimeout * 1000),
     });
 
+    // Cache session and user for fast refresh lookups
+    this.cacheSession(session).catch(() => {});
+    this.cacheUser(user).catch(() => {});
+
     const accessTokenClaims: AccessTokenClaims = {
       iss: this.issuer,
       sub: user.id,
@@ -239,7 +257,7 @@ export class Argus {
 
     // 14. Write audit log
     if (this.config.audit?.enabled) {
-      await this.writeAudit('USER_REGISTERED', user.id, input.ipAddress, input.userAgent, {});
+      this.writeAudit('USER_REGISTERED', user.id, input.ipAddress, input.userAgent, {});
     }
 
     // 15. Emit event
@@ -254,7 +272,10 @@ export class Argus {
       await this.config.hooks.afterRegister(user);
     }
 
-    // 17. Return AuthResponse
+    // 17. Flush any buffered audit entries before returning
+    await this.flushAuditLog();
+
+    // 18. Return AuthResponse
     return this.buildAuthResponse(user, accessToken, refreshTokenRaw, 900);
   }
 
@@ -302,7 +323,7 @@ export class Argus {
 
         // Write audit ACCOUNT_LOCKED
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ACCOUNT_LOCKED', user.id, context.ipAddress, context.userAgent, {
+          this.writeAudit('ACCOUNT_LOCKED', user.id, context.ipAddress, context.userAgent, {
             failedAttempts: newFailedAttempts,
           });
         }
@@ -316,10 +337,11 @@ export class Argus {
       }
 
       await this.db.updateUser(user.id, updateFields);
+      this.invalidateUserCache(user.id).catch(() => {});
 
       // 4c. Write audit LOGIN_FAILED
       if (this.config.audit?.enabled) {
-        await this.writeAudit('LOGIN_FAILED', user.id, context.ipAddress, context.userAgent, {
+        this.writeAudit('LOGIN_FAILED', user.id, context.ipAddress, context.userAgent, {
           failedAttempts: newFailedAttempts,
         });
       }
@@ -331,7 +353,8 @@ export class Argus {
         timestamp: new Date(),
       });
 
-      // 4e. Throw
+      // 4e. Flush audit buffer and throw
+      await this.flushAuditLog();
       throw Errors.invalidCredentials();
     }
 
@@ -340,6 +363,7 @@ export class Argus {
       failedLoginAttempts: 0,
       lockedUntil: null,
     });
+    this.invalidateUserCache(user.id).catch(() => {});
 
     // 6. If MFA enabled, return MFA challenge
     if (user.mfaEnabled) {
@@ -361,6 +385,9 @@ export class Argus {
       deviceFingerprint: context.deviceFingerprint,
       expiresAt: new Date(Date.now() + sessionTimeout * 1000),
     });
+
+    // Cache session for fast refresh lookups
+    this.cacheSession(session).catch(() => {});
 
     // 9. Generate access + refresh tokens
     const accessTokenClaims: AccessTokenClaims = {
@@ -399,6 +426,7 @@ export class Argus {
       const toRevoke = activeSessions.slice(0, activeSessions.length - maxPerUser);
       for (const s of toRevoke) {
         await this.db.revokeSession(s.id, 'session_limit_exceeded');
+        this.invalidateSessionCache(s.id).catch(() => {});
       }
     }
 
@@ -408,10 +436,11 @@ export class Argus {
       lastLoginIp: context.ipAddress,
       failedLoginAttempts: 0,
     });
+    this.invalidateUserCache(user.id).catch(() => {});
 
     // 11. Write audit
     if (this.config.audit?.enabled) {
-      await this.writeAudit('LOGIN_SUCCESS', user.id, context.ipAddress, context.userAgent, {});
+      this.writeAudit('LOGIN_SUCCESS', user.id, context.ipAddress, context.userAgent, {});
     }
 
     // 12. Emit events
@@ -432,7 +461,10 @@ export class Argus {
       await this.config.hooks.afterLogin(user, session);
     }
 
-    // 14. Return AuthResponse
+    // 14. Flush any buffered audit entries before returning
+    await this.flushAuditLog();
+
+    // 15. Return AuthResponse
     return this.buildAuthResponse(user, accessToken, refreshTokenRaw, 900);
   }
 
@@ -444,21 +476,28 @@ export class Argus {
       await this.db.revokeAllSessions(userId, 'logout');
       await this.db.revokeAllUserTokens(userId, 'logout');
 
+      // Invalidate user cache (sessions are invalidated by clearing all)
+      this.invalidateUserCache(userId).catch(() => {});
+
       // Write audit
       if (this.config.audit?.enabled) {
-        await this.writeAudit('LOGOUT_ALL_SESSIONS', userId, null, null, {});
+        this.writeAudit('LOGOUT_ALL_SESSIONS', userId, null, null, {});
       }
     } else {
       // 2. Revoke single session
       await this.db.revokeSession(sessionId, 'logout');
+      this.invalidateSessionCache(sessionId).catch(() => {});
 
       // Write audit
       if (this.config.audit?.enabled) {
-        await this.writeAudit('LOGOUT', userId, null, null, { sessionId });
+        this.writeAudit('LOGOUT', userId, null, null, { sessionId });
       }
     }
 
-    // 3. Emit event
+    // 3. Flush audit buffer
+    await this.flushAuditLog();
+
+    // 4. Emit event
     await this.emitter.emit('user.logout', {
       userId,
       sessionId,
@@ -488,7 +527,7 @@ export class Argus {
       await this.db.revokeTokenFamily(token.family, 'reuse_detected');
       await this.db.revokeAllSessions(token.userId, 'security_alert');
       if (this.config.audit?.enabled) {
-        await this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
+        this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
           family: token.family,
           generation: token.generation,
         });
@@ -503,6 +542,7 @@ export class Argus {
         type: 'token_reuse',
         timestamp: new Date(),
       });
+      await this.flushAuditLog();
       throw Errors.refreshTokenReuse();
     }
 
@@ -511,8 +551,14 @@ export class Argus {
       throw Errors.invalidRefreshToken();
     }
 
-    // 6. Get session, verify not revoked
-    const session = await this.db.getSession(token.sessionId);
+    // 6. Get session (cache first, then DB), verify not revoked
+    let session = await this.getCachedSession(token.sessionId);
+    if (!session) {
+      session = await this.db.getSession(token.sessionId);
+      if (session && !session.revoked) {
+        this.cacheSession(session).catch(() => {});
+      }
+    }
     if (!session || session.revoked) {
       throw Errors.sessionExpired();
     }
@@ -528,7 +574,7 @@ export class Argus {
         await this.db.revokeTokenFamily(token.family, 'reuse_detected');
         await this.db.revokeAllSessions(token.userId, 'security_alert');
         if (this.config.audit?.enabled) {
-          await this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
+          this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
             family: token.family,
             generation: token.generation,
           });
@@ -543,6 +589,7 @@ export class Argus {
           type: 'token_reuse',
           timestamp: new Date(),
         });
+        await this.flushAuditLog();
         throw Errors.refreshTokenReuse();
       }
 
@@ -561,8 +608,14 @@ export class Argus {
       returnRefreshToken = newRefreshTokenRaw;
     }
 
-    // 8. Get user from DB
-    const user = await this.db.findUserById(token.userId);
+    // 8. Get user (cache first, then DB)
+    let user = await this.getCachedUser(token.userId);
+    if (!user) {
+      user = await this.db.findUserById(token.userId);
+      if (user) {
+        this.cacheUser(user).catch(() => {});
+      }
+    }
     if (!user) {
       throw Errors.invalidRefreshToken();
     }
@@ -585,7 +638,7 @@ export class Argus {
 
     // 10. Write audit
     if (this.config.audit?.enabled) {
-      await this.writeAudit('TOKEN_REFRESHED', user.id, null, null, {
+      this.writeAudit('TOKEN_REFRESHED', user.id, null, null, {
         sessionId: session.id,
       });
     }
@@ -597,7 +650,10 @@ export class Argus {
       timestamp: new Date(),
     });
 
-    // 12. Return AuthResponse
+    // 12. Flush any buffered audit entries before returning
+    await this.flushAuditLog();
+
+    // 13. Return AuthResponse
     return this.buildAuthResponse(user, accessToken, returnRefreshToken, 900);
   }
 
@@ -636,8 +692,9 @@ export class Argus {
 
     // Write audit
     if (this.config.audit?.enabled) {
-      await this.writeAudit('PASSWORD_RESET_REQUESTED', user.id, ipAddress, userAgent ?? null, {});
+      this.writeAudit('PASSWORD_RESET_REQUESTED', user.id, ipAddress, userAgent ?? null, {});
     }
+    await this.flushAuditLog();
   }
 
   // ─── Reset Password Pipeline ──────────────────────────────────────
@@ -701,6 +758,7 @@ export class Argus {
 
     // 7. Update user's passwordHash
     await this.db.updateUser(user.id, { passwordHash: newPasswordHash });
+    this.invalidateUserCache(user.id).catch(() => {});
 
     // 9. Mark reset token as used
     await this.db.markResetTokenUsed(resetToken.id);
@@ -723,8 +781,9 @@ export class Argus {
 
     // 13. Write audit
     if (this.config.audit?.enabled) {
-      await this.writeAudit('PASSWORD_RESET_COMPLETED', user.id, ipAddress, null, {});
+      this.writeAudit('PASSWORD_RESET_COMPLETED', user.id, ipAddress, null, {});
     }
+    await this.flushAuditLog();
 
     // 14. Emit event
     await this.emitter.emit('user.password_changed', {
@@ -753,11 +812,13 @@ export class Argus {
       emailVerified: true,
       emailVerifiedAt: new Date(),
     });
+    this.invalidateUserCache(verificationToken.userId).catch(() => {});
 
     // 5. Write audit
     if (this.config.audit?.enabled) {
-      await this.writeAudit('EMAIL_VERIFIED', verificationToken.userId, null, null, {});
+      this.writeAudit('EMAIL_VERIFIED', verificationToken.userId, null, null, {});
     }
+    await this.flushAuditLog();
 
     // 6. Emit event
     await this.emitter.emit('user.email_verified', {
@@ -799,8 +860,9 @@ export class Argus {
 
     // 6. Write audit
     if (this.config.audit?.enabled) {
-      await this.writeAudit('EMAIL_VERIFICATION_SENT', user.id, null, null, {});
+      this.writeAudit('EMAIL_VERIFICATION_SENT', user.id, null, null, {});
     }
+    await this.flushAuditLog();
   }
 
   // ─── Token Verification ────────────────────────────────────────────
@@ -837,14 +899,96 @@ export class Argus {
     };
   }
 
-  private async writeAudit(
+  // ─── Session & User Cache ─────────────────────────────────────────
+
+  private async cacheSession(session: Session): Promise<void> {
+    try {
+      await this.cache.set(
+        `session:${session.id}`,
+        JSON.stringify(session),
+        this.config.session?.absoluteTimeout ?? 2592000
+      );
+    } catch {}  // cache miss is not fatal
+  }
+
+  private async getCachedSession(id: string): Promise<Session | null> {
+    try {
+      const cached = await this.cache.get(`session:${id}`);
+      if (cached) {
+        const session = JSON.parse(cached);
+        // Restore Date objects
+        session.lastActivityAt = new Date(session.lastActivityAt);
+        session.expiresAt = new Date(session.expiresAt);
+        session.createdAt = new Date(session.createdAt);
+        if (session.revokedAt) session.revokedAt = new Date(session.revokedAt);
+        return session;
+      }
+    } catch {}
+    return null;
+  }
+
+  private async invalidateSessionCache(id: string): Promise<void> {
+    try { await this.cache.del(`session:${id}`); } catch {}
+  }
+
+  private async cacheUser(user: User): Promise<void> {
+    try {
+      await this.cache.set(`user:${user.id}`, JSON.stringify(user), 300); // 5 min TTL
+    } catch {}
+  }
+
+  private async getCachedUser(id: string): Promise<User | null> {
+    try {
+      const cached = await this.cache.get(`user:${id}`);
+      if (cached) {
+        const user = JSON.parse(cached);
+        // Restore Date objects
+        user.createdAt = new Date(user.createdAt);
+        user.updatedAt = new Date(user.updatedAt);
+        if (user.lockedUntil) user.lockedUntil = new Date(user.lockedUntil);
+        if (user.lastLoginAt) user.lastLoginAt = new Date(user.lastLoginAt);
+        if (user.emailVerifiedAt) user.emailVerifiedAt = new Date(user.emailVerifiedAt);
+        if (user.deletedAt) user.deletedAt = new Date(user.deletedAt);
+        return user;
+      }
+    } catch {}
+    return null;
+  }
+
+  private async invalidateUserCache(id: string): Promise<void> {
+    try { await this.cache.del(`user:${id}`); } catch {}
+  }
+
+  // ─── Audit Log Batching ──────────────────────────────────────────
+
+  private startAuditFlusher(): void {
+    this.auditFlushTimer = setInterval(() => this.flushAuditLog(), this.auditFlushInterval);
+    this.auditFlushTimer.unref(); // don't keep process alive
+  }
+
+  private async flushAuditLog(): Promise<void> {
+    if (this.auditBuffer.length === 0) return;
+    const batch = this.auditBuffer.splice(0);
+    try {
+      // Write all entries — could be optimized with a bulk insert method
+      await Promise.all(batch.map(entry => this.db.writeAuditLog(entry)));
+    } catch (err) {
+      // On failure, push back to buffer (with size limit to prevent memory leak)
+      if (this.auditBuffer.length < 10000) {
+        this.auditBuffer.unshift(...batch);
+      }
+    }
+  }
+
+  private writeAudit(
     action: AuditAction,
     userId: string | null,
     ipAddress: string | null,
     userAgent: string | null,
     metadata: Record<string, unknown>,
-  ): Promise<void> {
-    await this.db.writeAuditLog({
+  ): void {
+    // Non-blocking — push to buffer, flush async
+    this.auditBuffer.push({
       id: generateUUID(),
       userId,
       action,
@@ -854,6 +998,10 @@ export class Argus {
       orgId: null,
       createdAt: new Date(),
     });
+    // Flush immediately if buffer is full
+    if (this.auditBuffer.length >= this.auditBatchSize) {
+      this.flushAuditLog().catch(() => {});
+    }
   }
 
   // ─── Authorization ──────────────────────────────────────────────────
@@ -935,14 +1083,16 @@ export class Argus {
           mfaEnabled: true,
           mfaMethods: [method],
         });
+        this.invalidateUserCache(userId).catch(() => {});
 
         // Clean up cache
         await this.cache.del(`mfa:setup:${userId}`);
 
         // 5. Write audit + emit
         if (this.config.audit?.enabled) {
-          await this.writeAudit('MFA_ENABLED', userId, null, null, { method });
+          this.writeAudit('MFA_ENABLED', userId, null, null, { method });
         }
+        await this.flushAuditLog();
         await this.emitter.emit('mfa.enabled', {
           userId,
           method,
@@ -980,7 +1130,7 @@ export class Argus {
             await this.db.markBackupCodeUsed(userId, i);
 
             if (this.config.audit?.enabled) {
-              await this.writeAudit('BACKUP_CODE_USED', userId, context.ipAddress, context.userAgent, {
+              this.writeAudit('BACKUP_CODE_USED', userId, context.ipAddress, context.userAgent, {
                 codeIndex: i,
               });
             }
@@ -995,13 +1145,14 @@ export class Argus {
           if (!valid) {
             // Write audit MFA_CHALLENGE_FAILED
             if (this.config.audit?.enabled) {
-              await this.writeAudit('MFA_CHALLENGE_FAILED', userId, context.ipAddress, context.userAgent, { method });
+              this.writeAudit('MFA_CHALLENGE_FAILED', userId, context.ipAddress, context.userAgent, { method });
             }
             await this.emitter.emit('mfa.challenge_failed', {
               userId,
               method,
               timestamp: new Date(),
             });
+            await this.flushAuditLog();
             throw Errors.invalidMfaCode();
           }
         }
@@ -1015,6 +1166,9 @@ export class Argus {
           deviceFingerprint: context.deviceFingerprint,
           expiresAt: new Date(Date.now() + sessionTimeout * 1000),
         });
+
+        // Cache session for fast refresh lookups
+        this.cacheSession(session).catch(() => {});
 
         const accessTokenClaims: AccessTokenClaims = {
           iss: this.issuer,
@@ -1049,11 +1203,13 @@ export class Argus {
           lastLoginIp: context.ipAddress,
           failedLoginAttempts: 0,
         });
+        this.invalidateUserCache(user.id).catch(() => {});
 
         // Write audit
         if (this.config.audit?.enabled) {
-          await this.writeAudit('MFA_CHALLENGE_PASSED', userId, context.ipAddress, context.userAgent, { method });
+          this.writeAudit('MFA_CHALLENGE_PASSED', userId, context.ipAddress, context.userAgent, { method });
         }
+        await this.flushAuditLog();
 
         // Emit events
         await this.emitter.emit('user.login', {
@@ -1090,11 +1246,13 @@ export class Argus {
           mfaEnabled: false,
           mfaMethods: [],
         });
+        this.invalidateUserCache(userId).catch(() => {});
 
         // 5. Write audit + emit
         if (this.config.audit?.enabled) {
-          await this.writeAudit('MFA_DISABLED', userId, null, null, { method: mfaSecret.method });
+          this.writeAudit('MFA_DISABLED', userId, null, null, { method: mfaSecret.method });
         }
+        await this.flushAuditLog();
         await this.emitter.emit('mfa.disabled', {
           userId,
           method: mfaSecret.method,
@@ -1266,7 +1424,7 @@ export class Argus {
 
           // Write audit for new link
           if (this.config.audit?.enabled) {
-            await this.writeAudit('OAUTH_LINKED', user.id, context.ipAddress, context.userAgent, {
+            this.writeAudit('OAUTH_LINKED', user.id, context.ipAddress, context.userAgent, {
               provider: providerName,
               providerUserId: profile.id,
             });
@@ -1288,6 +1446,9 @@ export class Argus {
           deviceFingerprint: context.deviceFingerprint,
           expiresAt: new Date(Date.now() + sessionTimeout * 1000),
         });
+
+        // Cache session for fast refresh lookups
+        this.cacheSession(session).catch(() => {});
 
         const accessTokenClaims: AccessTokenClaims = {
           iss: this.issuer,
@@ -1321,14 +1482,16 @@ export class Argus {
           lastLoginAt: new Date(),
           lastLoginIp: context.ipAddress,
         });
+        this.invalidateUserCache(user.id).catch(() => {});
 
         // Write audit
         if (this.config.audit?.enabled) {
-          await this.writeAudit('LOGIN_SUCCESS', user.id, context.ipAddress, context.userAgent, {
+          this.writeAudit('LOGIN_SUCCESS', user.id, context.ipAddress, context.userAgent, {
             method: 'oauth',
             provider: providerName,
           });
         }
+        await this.flushAuditLog();
 
         // Emit events
         await this.emitter.emit('user.login', {
@@ -1385,11 +1548,12 @@ export class Argus {
         });
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('OAUTH_LINKED', userId, null, null, {
+          this.writeAudit('OAUTH_LINKED', userId, null, null, {
             provider: providerName,
             providerUserId: profile.id,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('oauth.linked', {
           userId,
@@ -1416,10 +1580,11 @@ export class Argus {
         await this.db.unlinkOAuthProvider(userId, providerName);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('OAUTH_UNLINKED', userId, null, null, {
+          this.writeAudit('OAUTH_UNLINKED', userId, null, null, {
             provider: providerName,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('oauth.unlinked', {
           userId,
@@ -1446,11 +1611,12 @@ export class Argus {
         });
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', input.ownerId, null, null, {
+          this.writeAudit('ADMIN_ACTION', input.ownerId, null, null, {
             subAction: 'org.created',
             orgId: org.id,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.created', {
           type: 'org.created',
@@ -1475,11 +1641,12 @@ export class Argus {
         const updated = await this.db.updateOrganization(id, updates);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+          this.writeAudit('ADMIN_ACTION', null, null, null, {
             subAction: 'org.updated',
             orgId: id,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.updated', {
           type: 'org.updated',
@@ -1494,11 +1661,12 @@ export class Argus {
         await this.db.deleteOrganization(id);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+          this.writeAudit('ADMIN_ACTION', null, null, null, {
             subAction: 'org.deleted',
             orgId: id,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.deleted', {
           type: 'org.deleted',
@@ -1516,12 +1684,13 @@ export class Argus {
         });
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', input.userId, null, null, {
+          this.writeAudit('ADMIN_ACTION', input.userId, null, null, {
             subAction: 'org.member_added',
             orgId: input.orgId,
             role: input.role,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.member_added', {
           type: 'org.member_added',
@@ -1538,11 +1707,12 @@ export class Argus {
         await this.db.removeOrgMember(orgId, userId);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', userId, null, null, {
+          this.writeAudit('ADMIN_ACTION', userId, null, null, {
             subAction: 'org.member_removed',
             orgId,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.member_removed', {
           type: 'org.member_removed',
@@ -1556,11 +1726,12 @@ export class Argus {
         const member = await this.db.updateOrgMember(orgId, userId, updates);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', userId, null, null, {
+          this.writeAudit('ADMIN_ACTION', userId, null, null, {
             subAction: 'org.member_updated',
             orgId,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.member_updated', {
           type: 'org.member_updated',
@@ -1588,12 +1759,13 @@ export class Argus {
         });
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', input.invitedBy, null, null, {
+          this.writeAudit('ADMIN_ACTION', input.invitedBy, null, null, {
             subAction: 'org.invite_created',
             orgId: input.orgId,
             email: input.email,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.invite_created', {
           type: 'org.invite_created',
@@ -1625,11 +1797,12 @@ export class Argus {
         }
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', user?.id ?? null, null, null, {
+          this.writeAudit('ADMIN_ACTION', user?.id ?? null, null, null, {
             subAction: 'org.invite_accepted',
             orgId: invite.orgId,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.invite_accepted', {
           type: 'org.invite_accepted',
@@ -1651,11 +1824,12 @@ export class Argus {
         const updated = await this.db.updateOrganization(orgId, { settings: updatedSettings });
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+          this.writeAudit('ADMIN_ACTION', null, null, null, {
             subAction: 'org.settings_updated',
             orgId,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('org.settings_updated', {
           type: 'org.settings_updated',
@@ -1676,11 +1850,12 @@ export class Argus {
         const created = await this.db.createRole(role);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ROLE_CHANGED', null, null, null, {
+          this.writeAudit('ROLE_CHANGED', null, null, null, {
             subAction: 'role.created',
             roleName: role.name,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('role.created', {
           type: 'role.created',
@@ -1705,11 +1880,12 @@ export class Argus {
         const updated = await this.db.updateRole(name, updates);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ROLE_CHANGED', null, null, null, {
+          this.writeAudit('ROLE_CHANGED', null, null, null, {
             subAction: 'role.updated',
             roleName: name,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('role.updated', {
           type: 'role.updated',
@@ -1724,11 +1900,12 @@ export class Argus {
         await this.db.deleteRole(name);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ROLE_CHANGED', null, null, null, {
+          this.writeAudit('ROLE_CHANGED', null, null, null, {
             subAction: 'role.deleted',
             roleName: name,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('role.deleted', {
           type: 'role.deleted',
@@ -1760,12 +1937,13 @@ export class Argus {
         });
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', userId, null, null, {
+          this.writeAudit('ADMIN_ACTION', userId, null, null, {
             subAction: 'apikey.created',
             keyId: apiKey.id,
             name: input.name,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('apikey.created', {
           type: 'apikey.created',
@@ -1785,11 +1963,12 @@ export class Argus {
         await this.db.revokeApiKey(id);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+          this.writeAudit('ADMIN_ACTION', null, null, null, {
             subAction: 'apikey.revoked',
             keyId: id,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('apikey.revoked', {
           type: 'apikey.revoked',
@@ -1832,11 +2011,12 @@ export class Argus {
         });
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+          this.writeAudit('ADMIN_ACTION', null, null, null, {
             subAction: 'webhook.created',
             webhookId: webhook.id,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('webhook.created', {
           type: 'webhook.created',
@@ -1855,11 +2035,12 @@ export class Argus {
         const updated = await this.db.updateWebhook(id, updates);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+          this.writeAudit('ADMIN_ACTION', null, null, null, {
             subAction: 'webhook.updated',
             webhookId: id,
           });
         }
+        await this.flushAuditLog();
 
         return updated;
       },
@@ -1868,11 +2049,12 @@ export class Argus {
         await this.db.deleteWebhook(id);
 
         if (this.config.audit?.enabled) {
-          await this.writeAudit('ADMIN_ACTION', null, null, null, {
+          this.writeAudit('ADMIN_ACTION', null, null, null, {
             subAction: 'webhook.deleted',
             webhookId: id,
           });
         }
+        await this.flushAuditLog();
 
         await this.emitter.emit('webhook.deleted', {
           type: 'webhook.deleted',
