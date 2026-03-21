@@ -470,6 +470,8 @@ export class Argus {
   // ─── Refresh Token Pipeline ─────────────────────────────────────────
 
   async refresh(refreshTokenValue: string): Promise<AuthResponse> {
+    const shouldRotate = this.config.session?.rotateRefreshTokens ?? true;
+
     // 1. Hash the provided refresh token
     const tokenHash = hashToken(refreshTokenValue);
 
@@ -481,20 +483,16 @@ export class Argus {
       throw Errors.invalidRefreshToken();
     }
 
-    // 4. If revoked → TOKEN REUSE DETECTED
+    // 4. If revoked → TOKEN REUSE DETECTED (only meaningful when rotation is on)
     if (token.revoked) {
-      // a. Revoke entire token family
       await this.db.revokeTokenFamily(token.family, 'reuse_detected');
-      // b. Revoke all sessions for user
       await this.db.revokeAllSessions(token.userId, 'security_alert');
-      // c. Write audit
       if (this.config.audit?.enabled) {
         await this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
           family: token.family,
           generation: token.generation,
         });
       }
-      // d. Emit events
       await this.emitter.emit('token.reuse_detected', {
         userId: token.userId,
         family: token.family,
@@ -505,7 +503,6 @@ export class Argus {
         type: 'token_reuse',
         timestamp: new Date(),
       });
-      // e. Throw
       throw Errors.refreshTokenReuse();
     }
 
@@ -520,55 +517,57 @@ export class Argus {
       throw Errors.sessionExpired();
     }
 
-    // 7. Atomically revoke old refresh token — only the first concurrent
-    //    caller wins.  If another request already revoked this token we
-    //    treat it as token reuse (same security posture as a replay).
-    const didRevoke = await this.db.revokeRefreshTokenIfActive(token.id, 'rotated');
-    if (!didRevoke) {
-      // Another concurrent refresh already consumed this token — treat as reuse
-      await this.db.revokeTokenFamily(token.family, 'reuse_detected');
-      await this.db.revokeAllSessions(token.userId, 'security_alert');
-      if (this.config.audit?.enabled) {
-        await this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
+    // 7. Token rotation (when enabled)
+    let returnRefreshToken = refreshTokenValue; // default: return same token (no rotation)
+
+    if (shouldRotate) {
+      // Atomically revoke old token — only the first concurrent caller wins
+      const didRevoke = await this.db.revokeRefreshTokenIfActive(token.id, 'rotated');
+      if (!didRevoke) {
+        // Another concurrent refresh already consumed this token — treat as reuse
+        await this.db.revokeTokenFamily(token.family, 'reuse_detected');
+        await this.db.revokeAllSessions(token.userId, 'security_alert');
+        if (this.config.audit?.enabled) {
+          await this.writeAudit('TOKEN_REUSE_DETECTED', token.userId, null, null, {
+            family: token.family,
+            generation: token.generation,
+          });
+        }
+        await this.emitter.emit('token.reuse_detected', {
+          userId: token.userId,
           family: token.family,
-          generation: token.generation,
+          timestamp: new Date(),
         });
+        await this.emitter.emit('security.suspicious_activity', {
+          userId: token.userId,
+          type: 'token_reuse',
+          timestamp: new Date(),
+        });
+        throw Errors.refreshTokenReuse();
       }
-      await this.emitter.emit('token.reuse_detected', {
+
+      // Generate new refresh token
+      const newRefreshTokenRaw = generateToken(48);
+      const newRefreshTokenHash = hashToken(newRefreshTokenRaw);
+      const sessionTimeout = this.config.session?.absoluteTimeout ?? 2592000;
+      await this.db.createRefreshToken({
         userId: token.userId,
+        sessionId: token.sessionId,
+        tokenHash: newRefreshTokenHash,
         family: token.family,
-        timestamp: new Date(),
+        generation: token.generation + 1,
+        expiresAt: new Date(Date.now() + sessionTimeout * 1000),
       });
-      await this.emitter.emit('security.suspicious_activity', {
-        userId: token.userId,
-        type: 'token_reuse',
-        timestamp: new Date(),
-      });
-      throw Errors.refreshTokenReuse();
+      returnRefreshToken = newRefreshTokenRaw;
     }
 
-    // 8. Generate new refresh token value, hash it
-    const newRefreshTokenRaw = generateToken(48);
-    const newRefreshTokenHash = hashToken(newRefreshTokenRaw);
-
-    // 9. Create new refresh token in DB (same family, generation + 1)
-    const sessionTimeout = this.config.session?.absoluteTimeout ?? 2592000;
-    await this.db.createRefreshToken({
-      userId: token.userId,
-      sessionId: token.sessionId,
-      tokenHash: newRefreshTokenHash,
-      family: token.family,
-      generation: token.generation + 1,
-      expiresAt: new Date(Date.now() + sessionTimeout * 1000),
-    });
-
-    // 10. Get user from DB
+    // 8. Get user from DB
     const user = await this.db.findUserById(token.userId);
     if (!user) {
       throw Errors.invalidRefreshToken();
     }
 
-    // 11. Sign new access token
+    // 9. Sign new access token
     const accessTokenClaims: AccessTokenClaims = {
       iss: this.issuer,
       sub: user.id,
@@ -584,22 +583,22 @@ export class Argus {
     };
     const accessToken = await this.token.signAccessToken(accessTokenClaims);
 
-    // 12. Write audit
+    // 10. Write audit
     if (this.config.audit?.enabled) {
       await this.writeAudit('TOKEN_REFRESHED', user.id, null, null, {
         sessionId: session.id,
       });
     }
 
-    // 13. Emit event
+    // 11. Emit event
     await this.emitter.emit('token.refreshed', {
       userId: user.id,
       sessionId: session.id,
       timestamp: new Date(),
     });
 
-    // 14. Return AuthResponse
-    return this.buildAuthResponse(user, accessToken, newRefreshTokenRaw, 900);
+    // 12. Return AuthResponse
+    return this.buildAuthResponse(user, accessToken, returnRefreshToken, 900);
   }
 
   // ─── Forgot Password Pipeline ─────────────────────────────────────

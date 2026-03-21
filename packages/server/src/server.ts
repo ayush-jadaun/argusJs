@@ -56,7 +56,11 @@ async function main() {
     email: new MemoryEmailProvider(), // swap with SendGrid/SES/SMTP in production
     rateLimiter: redisUrl ? new RedisRateLimiter({ url: redisUrl }) : undefined,
     password: { minLength: 8, maxLength: 128, historyCount: 5 },
-    session: { maxPerUser: 5, absoluteTimeout: 2592000 },
+    session: {
+      maxPerUser: 5,
+      absoluteTimeout: 2592000,
+      rotateRefreshTokens: process.env.ROTATE_REFRESH_TOKENS !== 'false', // default true
+    },
     lockout: { maxAttempts: 10, duration: 1800, captchaThreshold: 3 },
     emailVerification: { required: true, tokenTTL: 86400 },
     audit: { enabled: true },

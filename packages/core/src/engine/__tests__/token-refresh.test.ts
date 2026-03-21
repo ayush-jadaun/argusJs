@@ -68,4 +68,38 @@ describe('Argus.refresh', () => {
     const logs = await db.queryAuditLog({ action: 'TOKEN_REFRESHED' });
     expect(logs.entries.length).toBe(1);
   });
+
+  describe('with rotateRefreshTokens: false', () => {
+    it('should return the SAME refresh token (no rotation)', async () => {
+      const { argus } = createTestArgus({ session: { rotateRefreshTokens: false, maxPerUser: 5, absoluteTimeout: 86400 } });
+      await argus.init();
+      const reg = await argus.register({ email: 'norotate@test.com', password: 'strongpass123', displayName: 'NoRot', ipAddress: '1.2.3.4', userAgent: 'test' });
+      const r1 = await argus.refresh(reg.refreshToken);
+      expect(r1.refreshToken).toBe(reg.refreshToken); // same token returned
+      expect(r1.accessToken).toBeDefined();
+    });
+
+    it('should allow reusing the same refresh token multiple times', async () => {
+      const { argus } = createTestArgus({ session: { rotateRefreshTokens: false, maxPerUser: 5, absoluteTimeout: 86400 } });
+      await argus.init();
+      const reg = await argus.register({ email: 'reuse-ok@test.com', password: 'strongpass123', displayName: 'ReuseOK', ipAddress: '1.2.3.4', userAgent: 'test' });
+      // Use the same token 5 times — all should succeed
+      for (let i = 0; i < 5; i++) {
+        const result = await argus.refresh(reg.refreshToken);
+        expect(result.accessToken).toBeDefined();
+        expect(result.refreshToken).toBe(reg.refreshToken);
+      }
+    });
+
+    it('should still reject expired tokens', async () => {
+      const { argus, db } = createTestArgus({ session: { rotateRefreshTokens: false, maxPerUser: 5, absoluteTimeout: 86400 } });
+      await argus.init();
+      const reg = await argus.register({ email: 'expire-norot@test.com', password: 'strongpass123', displayName: 'Exp', ipAddress: '1.2.3.4', userAgent: 'test' });
+      const { hashToken } = await import('../../../utils/crypto.js');
+      const hash = hashToken(reg.refreshToken);
+      const token = await db.findRefreshTokenByHash(hash);
+      if (token) { (token as any).expiresAt = new Date(Date.now() - 1000); }
+      await expect(argus.refresh(reg.refreshToken)).rejects.toThrow();
+    });
+  });
 });

@@ -15,7 +15,11 @@
       "Bash(pnpm turbo:*)",
       "Bash(DATABASE_URL=\"postgres://postgres:postgres@localhost:5434/postgres\" REDIS_URL=\"redis://localhost:6381\" timeout 8 node packages/server/dist/server.js)",
       "Bash(cd:*)",
-      "Bash(taskkill //F //IM node.exe)"
+      "Bash(taskkill //F //IM node.exe)",
+      "WebSearch",
+      "Bash(docker run:*)",
+      "Bash(docker rm:*)",
+      "Bash(curl -sf http://localhost:8090/health/ready)"
     ]
   }
 }

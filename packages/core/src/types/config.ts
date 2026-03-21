@@ -39,6 +39,7 @@ export interface ArgusConfig {
     inactivityTimeout?: number;
     bindToIP?: boolean;
     bindToDevice?: boolean;
+    rotateRefreshTokens?: boolean; // default true — rotate on every refresh (secure). Set false for Keycloak-style reuse (faster).
   };
 
   lockout?: {
