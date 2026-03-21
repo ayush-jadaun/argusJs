@@ -1,5 +1,5 @@
 import type { ArgusConfig } from '../types/config.js';
-import type { User, Session, AuditAction, AuditLogEntry, Organization, OrgMember, OrgInvite, OrgSettings, ApiKey, Role, Webhook } from '../types/entities.js';
+import type { User, Session, RefreshToken, AuditAction, AuditLogEntry, Organization, OrgMember, OrgInvite, OrgSettings, ApiKey, Role, Webhook } from '../types/entities.js';
 import type { AuthResponse, UserResponse, MFAChallengeResponse, MFASetupData, AccessTokenClaims, OAuthTokens } from '../types/responses.js';
 import type { DbAdapter } from '../interfaces/db-adapter.js';
 import type { CacheAdapter } from '../interfaces/cache-adapter.js';
@@ -514,8 +514,30 @@ export class Argus {
     // 1. Hash the provided refresh token
     const tokenHash = hashToken(refreshTokenValue);
 
-    // 2. Look up in DB by hash
-    const token = await this.db.findRefreshTokenByHash(tokenHash);
+    // 2. Look up refresh token — cache first if enabled, then DB
+    const shouldCacheTokens = this.config.session?.cacheRefreshTokens ?? false;
+    const tokenCacheTTL = this.config.session?.refreshTokenCacheTTL ?? 30;
+    let token: RefreshToken | null = null;
+
+    if (shouldCacheTokens) {
+      try {
+        const cached = await this.cache.get(`rtoken:${tokenHash}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          parsed.expiresAt = new Date(parsed.expiresAt);
+          parsed.createdAt = new Date(parsed.createdAt);
+          if (parsed.revokedAt) parsed.revokedAt = new Date(parsed.revokedAt);
+          token = parsed;
+        }
+      } catch {}
+    }
+    if (!token) {
+      token = await this.db.findRefreshTokenByHash(tokenHash);
+      // Populate cache for next time
+      if (token && shouldCacheTokens) {
+        this.cache.set(`rtoken:${tokenHash}`, JSON.stringify(token), tokenCacheTTL).catch(() => {});
+      }
+    }
 
     // 3. If not found → throw
     if (!token) {
@@ -567,6 +589,10 @@ export class Argus {
     let returnRefreshToken = refreshTokenValue; // default: return same token (no rotation)
 
     if (shouldRotate) {
+      // Invalidate cached token so replays hit DB (which has revoked=true)
+      if (shouldCacheTokens) {
+        this.cache.del(`rtoken:${tokenHash}`).catch(() => {});
+      }
       // Atomically revoke old token — only the first concurrent caller wins
       const didRevoke = await this.db.revokeRefreshTokenIfActive(token.id, 'rotated');
       if (!didRevoke) {
