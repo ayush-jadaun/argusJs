@@ -39,7 +39,7 @@ describe('Argus.refresh', () => {
   });
 
   it('should detect token reuse and revoke family', async () => {
-    const { argus, db } = createTestArgus();
+    const { argus } = createTestArgus();
     await argus.init();
     const reg = await setupUser(argus);
     const oldToken = reg.refreshToken;
@@ -56,7 +56,7 @@ describe('Argus.refresh', () => {
     const handler = vi.fn();
     argus.on('token.reuse_detected', handler);
     await argus.refresh(reg.refreshToken);
-    try { await argus.refresh(reg.refreshToken); } catch {}
+    try { await argus.refresh(reg.refreshToken); } catch { /* expected */ }
     expect(handler).toHaveBeenCalledTimes(1);
   });
 

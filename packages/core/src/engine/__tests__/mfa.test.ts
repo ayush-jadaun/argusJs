@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { createTestArgus } from './helpers.js';
 import type { MFAProvider } from '../../interfaces/mfa-provider.js';
 
 const mockMFAProvider: MFAProvider = {
   name: 'totp',
-  async generateSecret(user) {
+  async generateSecret(_user) {
     return {
       secret: 'JBSWY3DPEHPK3PXP',
       qrCodeUrl: 'otpauth://totp/Argus:test@test.com?secret=JBSWY3DPEHPK3PXP',
@@ -40,7 +40,7 @@ describe('Argus.mfa', () => {
 
   describe('setup', () => {
     it('should return secret, QR code, and backup codes', async () => {
-      const { argus, db } = createMFATestArgus();
+      const { argus } = createMFATestArgus();
       await argus.init();
       const auth = await registerUser(argus);
 
@@ -88,7 +88,7 @@ describe('Argus.mfa', () => {
 
   describe('verifyLogin', () => {
     it('should return tokens with correct code', async () => {
-      const { argus, db } = createMFATestArgus();
+      const { argus } = createMFATestArgus();
       await argus.init();
       const auth = await registerUser(argus);
 
@@ -238,7 +238,7 @@ describe('Argus.mfa', () => {
           ipAddress: '1.2.3.4',
           userAgent: 'test',
         });
-      } catch {}
+      } catch { /* expected */ }
 
       const { entries } = await db.queryAuditLog({ userId: auth.user.id, action: 'MFA_CHALLENGE_FAILED' });
       expect(entries.length).toBeGreaterThanOrEqual(1);

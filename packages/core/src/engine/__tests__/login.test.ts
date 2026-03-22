@@ -35,7 +35,7 @@ describe('Argus.login', () => {
     const { argus, db } = createTestArgus();
     await argus.init();
     await registerUser(argus);
-    try { await argus.login('alice@example.com', 'wrong', { ipAddress: '1.2.3.4', userAgent: 'test' }); } catch {}
+    try { await argus.login('alice@example.com', 'wrong', { ipAddress: '1.2.3.4', userAgent: 'test' }); } catch { /* expected */ }
     const user = await db.findUserByEmail('alice@example.com');
     expect(user!.failedLoginAttempts).toBe(1);
   });
@@ -45,7 +45,7 @@ describe('Argus.login', () => {
     await argus.init();
     await registerUser(argus);
     for (let i = 0; i < 3; i++) {
-      try { await argus.login('alice@example.com', 'wrong', { ipAddress: '1.2.3.4', userAgent: 'test' }); } catch {}
+      try { await argus.login('alice@example.com', 'wrong', { ipAddress: '1.2.3.4', userAgent: 'test' }); } catch { /* expected */ }
     }
     await expect(argus.login('alice@example.com', 'strongpass123', { ipAddress: '1.2.3.4', userAgent: 'test' }))
       .rejects.toThrow('Account locked');
@@ -55,7 +55,7 @@ describe('Argus.login', () => {
     const { argus, db } = createTestArgus();
     await argus.init();
     await registerUser(argus);
-    try { await argus.login('alice@example.com', 'wrong', { ipAddress: '1.2.3.4', userAgent: 'test' }); } catch {}
+    try { await argus.login('alice@example.com', 'wrong', { ipAddress: '1.2.3.4', userAgent: 'test' }); } catch { /* expected */ }
     await argus.login('alice@example.com', 'strongpass123', { ipAddress: '1.2.3.4', userAgent: 'test' });
     const user = await db.findUserByEmail('alice@example.com');
     expect(user!.failedLoginAttempts).toBe(0);

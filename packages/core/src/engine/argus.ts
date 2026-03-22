@@ -529,7 +529,7 @@ export class Argus {
           if (parsed.revokedAt) parsed.revokedAt = new Date(parsed.revokedAt);
           token = parsed;
         }
-      } catch {}
+      } catch { /* ignore */ }
     }
     if (!token) {
       token = await this.db.findRefreshTokenByHash(tokenHash);
@@ -934,7 +934,7 @@ export class Argus {
         JSON.stringify(session),
         this.config.session?.absoluteTimeout ?? 2592000
       );
-    } catch {}  // cache miss is not fatal
+    } catch { /* cache miss ok */ }
   }
 
   private async getCachedSession(id: string): Promise<Session | null> {
@@ -949,18 +949,18 @@ export class Argus {
         if (session.revokedAt) session.revokedAt = new Date(session.revokedAt);
         return session;
       }
-    } catch {}
+    } catch { /* cache miss ok */ }
     return null;
   }
 
   private async invalidateSessionCache(id: string): Promise<void> {
-    try { await this.cache.del(`session:${id}`); } catch {}
+    try { await this.cache.del(`session:${id}`); } catch { /* ignore */ }
   }
 
   private async cacheUser(user: User): Promise<void> {
     try {
       await this.cache.set(`user:${user.id}`, JSON.stringify(user), 300); // 5 min TTL
-    } catch {}
+    } catch { /* ignore */ }
   }
 
   private async getCachedUser(id: string): Promise<User | null> {
@@ -977,12 +977,12 @@ export class Argus {
         if (user.deletedAt) user.deletedAt = new Date(user.deletedAt);
         return user;
       }
-    } catch {}
+    } catch { /* ignore */ }
     return null;
   }
 
   private async invalidateUserCache(id: string): Promise<void> {
-    try { await this.cache.del(`user:${id}`); } catch {}
+    try { await this.cache.del(`user:${id}`); } catch { /* ignore */ }
   }
 
   // ─── Audit Log Batching ──────────────────────────────────────────
@@ -998,7 +998,7 @@ export class Argus {
     try {
       // Write all entries — could be optimized with a bulk insert method
       await Promise.all(batch.map(entry => this.db.writeAuditLog(entry)));
-    } catch (err) {
+    } catch {
       // On failure, push back to buffer (with size limit to prevent memory leak)
       if (this.auditBuffer.length < 10000) {
         this.auditBuffer.unshift(...batch);

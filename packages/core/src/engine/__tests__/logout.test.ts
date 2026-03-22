@@ -5,7 +5,7 @@ describe('Argus.logout', () => {
   it('should revoke current session', async () => {
     const { argus, db } = createTestArgus();
     await argus.init();
-    const reg = await argus.register({ email: 'alice@example.com', password: 'strongpass123', displayName: 'Alice', ipAddress: '1.2.3.4', userAgent: 'test' });
+    await argus.register({ email: 'alice@example.com', password: 'strongpass123', displayName: 'Alice', ipAddress: '1.2.3.4', userAgent: 'test' });
     const user = await db.findUserByEmail('alice@example.com');
     const sessions = await db.getActiveSessions(user!.id);
     expect(sessions.length).toBe(1);

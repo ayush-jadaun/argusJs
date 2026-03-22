@@ -89,7 +89,7 @@ export const Errors = {
     new ArgusError('NOT_FOUND', `${resource} not found`, 404),
   emailExists: () =>
     new ArgusError('EMAIL_ALREADY_EXISTS', 'Email is already registered', 409),
-  weakPassword: (reasons: string[], suggestions?: string[]) =>
+  weakPassword: (reasons: string[], _suggestions?: string[]) =>
     new ArgusError('WEAK_PASSWORD', `Password does not meet strength requirements: ${reasons.join(', ')}`, 422),
   breachedPassword: () =>
     new ArgusError('BREACHED_PASSWORD', 'Password found in data breach database', 422),

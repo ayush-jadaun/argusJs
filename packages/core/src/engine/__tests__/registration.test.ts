@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createTestArgus, MockHasher } from './helpers.js';
+import { createTestArgus } from './helpers.js';
 
 describe('Argus.register', () => {
   it('should register a new user and return AuthResponse', async () => {
-    const { argus, db } = createTestArgus();
+    const { argus } = createTestArgus();
     await argus.init();
     const result = await argus.register({
       email: 'alice@example.com', password: 'strongpass123',

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { createTestArgus } from './helpers.js';
 
 describe('Argus.forgotPassword / resetPassword', () => {
@@ -23,7 +23,7 @@ describe('Argus.forgotPassword / resetPassword', () => {
   });
 
   it('should reset password with valid token', async () => {
-    const { argus, email, db } = createTestArgus();
+    const { argus, email } = createTestArgus();
     await argus.init();
     await setupUser(argus);
     email.clear();
