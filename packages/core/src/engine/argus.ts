@@ -573,15 +573,13 @@ export class Argus {
       throw Errors.invalidRefreshToken();
     }
 
-    // 6. Get session (cache first, then DB), verify not revoked
-    let session = await this.getCachedSession(token.sessionId);
-    if (!session) {
-      session = await this.db.getSession(token.sessionId);
-      if (session && !session.revoked) {
-        this.cacheSession(session).catch(() => {});
-      }
-    }
+    // 6. Get session from DB — always check DB for revocation status
+    //    (cache can serve stale revoked=false if session was revoked
+    //    externally, e.g. via admin API or direct DB call)
+    const session = await this.db.getSession(token.sessionId);
     if (!session || session.revoked) {
+      // Invalidate stale cache entry if it exists
+      this.invalidateSessionCache(token.sessionId).catch(() => { /* ignore */ });
       throw Errors.sessionExpired();
     }
 
