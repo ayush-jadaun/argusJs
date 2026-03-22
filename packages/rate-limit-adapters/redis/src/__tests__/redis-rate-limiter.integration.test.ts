@@ -24,7 +24,8 @@ describe('RedisRateLimiter (integration)', () => {
   beforeEach(async () => {
     if (!connected) return;
     const Redis = (await import('ioredis')).default;
-    const client = new Redis(REDIS_URL);
+    const client = new Redis(REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 1, connectTimeout: 3000 });
+    await client.connect();
     await client.flushdb();
     await client.quit();
   });

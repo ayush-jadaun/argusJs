@@ -40,6 +40,10 @@ export class RedisRateLimiter implements RateLimiter {
       lazyConnect: true,
       maxRetriesPerRequest: config.maxRetriesPerRequest ?? 3,
       connectTimeout: config.connectTimeout ?? 5000,
+      retryStrategy: (times: number) => {
+        if (times > 3) return null;
+        return Math.min(times * 200, 1000);
+      },
     };
     if (config.url) {
       this.client = new Redis(config.url, commonOpts);
