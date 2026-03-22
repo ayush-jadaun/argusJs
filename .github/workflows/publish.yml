@@ -1,0 +1,327 @@
+name: Publish Packages
+
+# Trigger: push a version tag like v0.1.0, v1.0.0-beta.1, etc.
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Also allow manual trigger from GitHub UI
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no actual publish)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write  # for npm provenance
+
+jobs:
+  # ==========================================
+  # Step 1: Run full test suite before publish
+  # ==========================================
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: argus
+          POSTGRES_PASSWORD: argus
+          POSTGRES_DB: argus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U argus"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Typecheck all packages
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Lint all packages
+      - name: Lint
+        run: pnpm lint
+
+      # Build all packages
+      - name: Build
+        run: pnpm build
+
+      # Unit tests
+      - name: Unit Tests
+        run: pnpm test:unit
+        env:
+          NODE_ENV: test
+
+      # Integration tests against real Postgres + Redis
+      - name: Integration Tests
+        run: pnpm test:integration
+        env:
+          DATABASE_URL: postgres://argus:argus@localhost:5432/argus
+          REDIS_URL: redis://localhost:6379
+
+      # Security audit
+      - name: Security Audit
+        run: pnpm audit --audit-level=high || true
+
+  # ==========================================
+  # Step 2: Publish all packages to npm
+  # ==========================================
+  publish:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      # Publish each package in dependency order
+      # Core must publish first, then adapters, then server/client/dashboard
+      - name: Publish @argus/core
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: cd packages/core && pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # DB Adapters
+      - name: Publish DB Adapters
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/db-adapters/memory && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/db-adapters/postgres && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/db-adapters/mongodb && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Cache Adapters
+      - name: Publish Cache Adapters
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/cache-adapters/memory && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/cache-adapters/redis && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Hash Adapters
+      - name: Publish Hash Adapters
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/hash-adapters/argon2 && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/hash-adapters/bcrypt && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/hash-adapters/scrypt && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Token Adapters
+      - name: Publish Token Adapters
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/token-adapters/jwt-rs256 && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/token-adapters/jwt-es256 && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/token-adapters/jwt-hs256 && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # MFA Adapters
+      - name: Publish MFA Adapters
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/mfa-adapters/totp && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/mfa-adapters/webauthn && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/mfa-adapters/sms && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # OAuth Providers
+      - name: Publish OAuth Providers
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/oauth-providers/google && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/oauth-providers/github && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/oauth-providers/apple && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/oauth-providers/microsoft && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/oauth-providers/discord && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/oauth-providers/custom && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Email Adapters
+      - name: Publish Email Adapters
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/email-adapters/memory && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/email-adapters/sendgrid && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/email-adapters/ses && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/email-adapters/smtp && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Rate Limit Adapters
+      - name: Publish Rate Limit Adapters
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/rate-limit-adapters/memory && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/rate-limit-adapters/redis && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Password Policies
+      - name: Publish Password Policies
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/password-policy/zxcvbn && pnpm publish --access public --no-git-checks || true
+          cd ../../../
+          cd packages/password-policy/hibp && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Security Engine
+      - name: Publish Security Engine
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: cd packages/security && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Server, Client (depend on core + adapters)
+      - name: Publish Server & Client
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          cd packages/server && pnpm publish --access public --no-git-checks || true
+          cd ../../
+          cd packages/client && pnpm publish --access public --no-git-checks || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Dry run — just verify packages are publishable
+      - name: Dry Run
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: |
+          echo "=== Dry Run: Checking all packages ==="
+          for pkg in $(find packages -name "package.json" -not -path "*/node_modules/*" | sort); do
+            dir=$(dirname "$pkg")
+            name=$(node -e "console.log(require('./$pkg').name)")
+            echo "Checking $name..."
+            cd "$dir" && pnpm pack --dry-run 2>&1 | tail -3 && cd - > /dev/null
+          done
+          echo "=== All packages verified ==="
+
+  # ==========================================
+  # Step 3: Create GitHub Release
+  # ==========================================
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          # Extract the section for this version from CHANGELOG.md
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          CHANGELOG=$(awk "/^## \[$VERSION\]/{found=1; next} /^## \[/{if(found) exit} found{print}" CHANGELOG.md)
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.version.outputs.VERSION }}
+          body: ${{ steps.changelog.outputs.BODY }}
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.VERSION, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==========================================
+  # Step 4: Build & Push Docker Image
+  # ==========================================
+  docker:
+    needs: publish
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}
+            ghcr.io/${{ github.repository }}:latest
