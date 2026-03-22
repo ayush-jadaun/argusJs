@@ -117,8 +117,10 @@ describe('PostgresAdapter (integration)', () => {
       await db.createRefreshToken({ userId: user.id, sessionId: session.id, tokenHash: 'h1', family: 'fam-x', generation: 0, expiresAt: new Date(Date.now() + 86400000) });
       await db.createRefreshToken({ userId: user.id, sessionId: session.id, tokenHash: 'h2', family: 'fam-x', generation: 1, expiresAt: new Date(Date.now() + 86400000) });
       await db.revokeTokenFamily('fam-x', 'reuse_detected');
-      expect(await db.findRefreshTokenByHash('h1')).toBeNull();
-      expect(await db.findRefreshTokenByHash('h2')).toBeNull();
+      const t1 = await db.findRefreshTokenByHash('h1');
+      const t2 = await db.findRefreshTokenByHash('h2');
+      expect(t1!.revoked).toBe(true);
+      expect(t2!.revoked).toBe(true);
     });
   });
 
