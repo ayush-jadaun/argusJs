@@ -8,6 +8,8 @@ export interface RedisCacheConfig {
   password?: string;
   db?: number;
   keyPrefix?: string;
+  maxRetriesPerRequest?: number;
+  connectTimeout?: number;
 }
 
 export class RedisCacheAdapter implements CacheAdapter {
@@ -16,21 +18,30 @@ export class RedisCacheAdapter implements CacheAdapter {
 
   constructor(config: RedisCacheConfig) {
     this.prefix = config.keyPrefix ?? 'argus:';
+    const commonOpts = {
+      lazyConnect: true,
+      maxRetriesPerRequest: config.maxRetriesPerRequest ?? 3,
+      connectTimeout: config.connectTimeout ?? 5000,
+    };
     if (config.url) {
-      this.client = new Redis(config.url);
+      this.client = new Redis(config.url, commonOpts);
     } else {
       this.client = new Redis({
         host: config.host ?? 'localhost',
         port: config.port ?? 6379,
         password: config.password,
         db: config.db ?? 0,
+        ...commonOpts,
       });
     }
   }
 
   private key(k: string): string { return this.prefix + k; }
 
-  async init(): Promise<void> { await this.client.ping(); }
+  async init(): Promise<void> {
+    await this.client.connect();
+    await this.client.ping();
+  }
   async shutdown(): Promise<void> { await this.client.quit(); }
 
   async get(key: string): Promise<string | null> {

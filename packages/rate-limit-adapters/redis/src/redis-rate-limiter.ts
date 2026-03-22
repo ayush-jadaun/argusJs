@@ -7,6 +7,8 @@ export interface RedisRateLimiterConfig {
   port?: number;
   password?: string;
   keyPrefix?: string;
+  maxRetriesPerRequest?: number;
+  connectTimeout?: number;
 }
 
 const LUA_SCRIPT = `
@@ -34,18 +36,27 @@ export class RedisRateLimiter implements RateLimiter {
 
   constructor(config: RedisRateLimiterConfig) {
     this.prefix = config.keyPrefix ?? 'argus:rl:';
+    const commonOpts = {
+      lazyConnect: true,
+      maxRetriesPerRequest: config.maxRetriesPerRequest ?? 3,
+      connectTimeout: config.connectTimeout ?? 5000,
+    };
     if (config.url) {
-      this.client = new Redis(config.url);
+      this.client = new Redis(config.url, commonOpts);
     } else {
       this.client = new Redis({
         host: config.host ?? 'localhost',
         port: config.port ?? 6379,
         password: config.password,
+        ...commonOpts,
       });
     }
   }
 
-  async init(): Promise<void> { await this.client.ping(); }
+  async init(): Promise<void> {
+    await this.client.connect();
+    await this.client.ping();
+  }
   async shutdown(): Promise<void> { await this.client.quit(); }
 
   async check(key: string, limit: number, windowSeconds: number): Promise<RateLimitResult> {
