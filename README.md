@@ -6,7 +6,7 @@
 <p align="center">
   <a href="#"><img src="https://img.shields.io/badge/build-passing-brightgreen" alt="Build Status" /></a>
   <a href="#"><img src="https://img.shields.io/badge/tests-282%20passed-brightgreen" alt="Tests" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License" /></a>
   <a href="#"><img src="https://img.shields.io/badge/node-%3E%3D20-green" alt="Node" /></a>
   <a href="#"><img src="https://img.shields.io/badge/typescript-5.7-blue" alt="TypeScript" /></a>
 </p>
@@ -156,6 +156,7 @@ graph TB
 | `@argus/client` | Browser/Node SDK with React hooks (`AuthProvider`, `useAuth`) | Stable |
 | `@argus/dashboard` | Next.js admin dashboard for user management | Stable |
 | `@argus/db-postgres` | PostgreSQL adapter using Drizzle ORM | Stable |
+| `@argus/db-mongodb` | MongoDB adapter using native driver | Stable |
 | `@argus/db-memory` | In-memory database adapter (dev/test) | Stable |
 | `@argus/cache-redis` | Redis cache adapter using ioredis | Stable |
 | `@argus/cache-memory` | In-memory cache adapter (dev/test) | Stable |
@@ -412,7 +413,7 @@ See [docs/TRADEOFFS.md](docs/TRADEOFFS.md) for full benchmark numbers, security 
 | Feature | ArgusJS | Auth0 | Clerk | Supabase Auth | Keycloak |
 |---------|---------|-------|-------|---------------|----------|
 | Self-hosted | Yes | No | No | Yes | Yes |
-| Open source | MIT | No | No | Apache 2.0 | Apache 2.0 |
+| Open source | Apache 2.0 | No | No | Apache 2.0 | Apache 2.0 |
 | Language | TypeScript | N/A (SaaS) | N/A (SaaS) | Go/TS | Java |
 | Pluggable adapters | Yes (all) | No | No | Limited | Limited |
 | MFA (TOTP + WebAuthn + SMS) | Yes | Yes | Yes | TOTP only | Yes |
@@ -428,7 +429,7 @@ See [docs/TRADEOFFS.md](docs/TRADEOFFS.md) for full benchmark numbers, security 
 | Audit logging | Yes | Yes (paid) | Yes (paid) | No | Yes |
 | GDPR data export | Yes | Manual | Manual | Manual | Manual |
 | Vendor lock-in | None | High | High | Medium | Low |
-| Pricing | Free (MIT) | $23+/mo | $25+/mo | Free tier | Free |
+| Pricing | Free (Apache-2.0) | $23+/mo | $25+/mo | Free tier | Free |
 
 ## Docker
 
@@ -714,4 +715,4 @@ pnpm start:cluster
 
 ## License
 
-MIT
+Apache-2.0
