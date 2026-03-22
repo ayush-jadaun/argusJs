@@ -1,0 +1,10 @@
+src/
+__tests__/
+tests/
+*.test.ts
+vitest.config.ts
+tsconfig.json
+.turbo/
+coverage/
+node_modules/
+.env
