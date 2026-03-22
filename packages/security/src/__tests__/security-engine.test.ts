@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { DefaultSecurityEngine } from '../default-security-engine.js';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
 
 describe('DefaultSecurityEngine', () => {
   let engine: DefaultSecurityEngine;

@@ -6,7 +6,7 @@ import type {
   User,
   OrgInvite,
   Organization,
-} from '@argus/core';
+} from '@argusjs/core';
 
 export interface SendGridConfig {
   apiKey: string;

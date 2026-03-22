@@ -1,11 +1,11 @@
 // Production setup with PostgreSQL + Redis + full Argon2
-import { Argus } from '@argus/core';
-import { PostgresAdapter } from '@argus/db-postgres';
-import { RedisCacheAdapter } from '@argus/cache-redis';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { SendGridEmailProvider } from '@argus/email-sendgrid';
-import { RedisRateLimiter } from '@argus/ratelimit-redis';
+import { Argus } from '@argusjs/core';
+import { PostgresAdapter } from '@argusjs/db-postgres';
+import { RedisCacheAdapter } from '@argusjs/cache-redis';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { SendGridEmailProvider } from '@argusjs/email-sendgrid';
+import { RedisRateLimiter } from '@argusjs/ratelimit-redis';
 
 async function main() {
   const argus = new Argus({

@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import type { PasswordHasher } from '@argus/core';
+import type { PasswordHasher } from '@argusjs/core';
 
 export interface BcryptConfig {
   rounds?: number; // default 12

@@ -2,7 +2,7 @@
 
 ## System Overview
 
-ArgusJS is organized as a Turborepo monorepo with 33 packages. At the center is `@argus/core`, a pure TypeScript authentication engine with zero framework dependencies. Everything else -- the HTTP server, dashboard, client SDK, and every adapter -- plugs into it through well-defined interfaces.
+ArgusJS is organized as a Turborepo monorepo with 33 packages. At the center is `@argusjs/core`, a pure TypeScript authentication engine with zero framework dependencies. Everything else -- the HTTP server, dashboard, client SDK, and every adapter -- plugs into it through well-defined interfaces.
 
 ```mermaid
 graph TB
@@ -13,12 +13,12 @@ graph TB
     end
 
     subgraph "API Layer"
-        Server["@argus/server<br/>Fastify 5 REST API"]
-        Dashboard["@argus/dashboard<br/>Next.js Admin UI"]
+        Server["@argusjs/server<br/>Fastify 5 REST API"]
+        Dashboard["@argusjs/dashboard<br/>Next.js Admin UI"]
     end
 
     subgraph "Core Engine"
-        Core["@argus/core<br/>Argus Class"]
+        Core["@argusjs/core<br/>Argus Class"]
         Events["Event Emitter"]
         AuthZ["Authorization Engine<br/>RBAC + ABAC"]
         Webhooks["Webhook Dispatcher"]
@@ -327,7 +327,7 @@ interface Session {
 
 ## Security Engine Components
 
-The optional `@argus/security-engine` package provides four sub-components:
+The optional `@argusjs/security-engine` package provides four sub-components:
 
 ### 1. Brute Force Protection
 Tracks failed login attempts per IP and per email using sliding windows in the cache. Triggers account lockout after configurable thresholds.

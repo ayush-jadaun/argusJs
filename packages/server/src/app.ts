@@ -2,7 +2,7 @@ import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import compress from '@fastify/compress';
-import type { Argus } from '@argus/core';
+import type { Argus } from '@argusjs/core';
 import { errorHandler } from './plugins/error-handler.js';
 import { requestId } from './plugins/request-id.js';
 import { authRoutes } from './routes/auth.js';

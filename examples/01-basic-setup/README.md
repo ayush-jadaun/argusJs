@@ -14,11 +14,11 @@ The simplest possible ArgusJS setup. Uses in-memory adapters for everything, so 
 
 | Component | Adapter | Notes |
 |-----------|---------|-------|
-| Database | `@argus/db-memory` | In-memory, data lost on restart |
-| Cache | `@argus/cache-memory` | In-memory |
-| Hashing | `@argus/hash-argon2` | Lightweight dev params (4 MB, 2 iterations) |
-| Tokens | `@argus/token-jwt-rs256` | Auto-generates RSA key pair |
-| Email | `@argus/email-memory` | Stores emails in memory (inspect with `.getSentEmails()`) |
+| Database | `@argusjs/db-memory` | In-memory, data lost on restart |
+| Cache | `@argusjs/cache-memory` | In-memory |
+| Hashing | `@argusjs/hash-argon2` | Lightweight dev params (4 MB, 2 iterations) |
+| Tokens | `@argusjs/token-jwt-rs256` | Auto-generates RSA key pair |
+| Email | `@argusjs/email-memory` | Stores emails in memory (inspect with `.getSentEmails()`) |
 
 ## Run
 

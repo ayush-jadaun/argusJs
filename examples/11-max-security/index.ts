@@ -2,14 +2,14 @@
 // Best for: Banking, healthcare, fintech
 // Refresh p50: ~21ms | Login p50: ~159ms | Registration p50: ~1,328ms
 
-import { Argus } from '@argus/core';
-import { PostgresAdapter } from '@argus/db-postgres';
-import { RedisCacheAdapter } from '@argus/cache-redis';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { MemoryEmailProvider } from '@argus/email-memory';
-import { RedisRateLimiter } from '@argus/ratelimit-redis';
-import { DefaultSecurityEngine } from '@argus/security-engine';
+import { Argus } from '@argusjs/core';
+import { PostgresAdapter } from '@argusjs/db-postgres';
+import { RedisCacheAdapter } from '@argusjs/cache-redis';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
+import { RedisRateLimiter } from '@argusjs/ratelimit-redis';
+import { DefaultSecurityEngine } from '@argusjs/security-engine';
 
 async function main() {
   const db = new PostgresAdapter({ connectionString: process.env.DATABASE_URL! });

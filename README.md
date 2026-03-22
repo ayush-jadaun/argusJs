@@ -49,9 +49,9 @@ ArgusJS is a complete, self-hosted authentication and authorization platform bui
 - **GDPR compliance** -- data export, account deletion, right to be forgotten
 
 ### Multi-Factor Authentication
-- **TOTP** -- Google Authenticator, Authy, 1Password (via `@argus/mfa-totp`)
-- **WebAuthn/FIDO2** -- hardware keys, biometrics, passkeys (via `@argus/mfa-webauthn`)
-- **SMS** -- Twilio-powered OTP codes (via `@argus/mfa-sms`)
+- **TOTP** -- Google Authenticator, Authy, 1Password (via `@argusjs/mfa-totp`)
+- **WebAuthn/FIDO2** -- hardware keys, biometrics, passkeys (via `@argusjs/mfa-webauthn`)
+- **SMS** -- Twilio-powered OTP codes (via `@argusjs/mfa-sms`)
 - **Backup codes** -- one-time recovery codes generated on MFA setup
 
 ### OAuth / Social Login
@@ -65,18 +65,18 @@ Every component is swappable -- database, cache, hashing, tokens, MFA, OAuth, em
 ## Quick Start
 
 ```bash
-npm install @argus/core @argus/server @argus/db-memory @argus/cache-memory \
-            @argus/hash-argon2 @argus/token-jwt-rs256 @argus/email-memory
+npm install @argusjs/core @argusjs/server @argusjs/db-memory @argusjs/cache-memory \
+            @argusjs/hash-argon2 @argusjs/token-jwt-rs256 @argusjs/email-memory
 ```
 
 ```typescript
-import { Argus } from '@argus/core';
-import { createApp } from '@argus/server';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { MemoryEmailProvider } from '@argus/email-memory';
+import { Argus } from '@argusjs/core';
+import { createApp } from '@argusjs/server';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
 
 const argus = new Argus({
   db: new MemoryDbAdapter(),
@@ -109,10 +109,10 @@ curl -X POST http://localhost:3100/v1/auth/login \
 
 ```mermaid
 graph TB
-    Client["Client App / SDK<br/><code>@argus/client</code>"]
-    Dashboard["Admin Dashboard<br/><code>@argus/dashboard</code> (Next.js)"]
-    Server["REST API Server<br/><code>@argus/server</code> (Fastify 5)"]
-    Core["Auth Engine<br/><code>@argus/core</code>"]
+    Client["Client App / SDK<br/><code>@argusjs/client</code>"]
+    Dashboard["Admin Dashboard<br/><code>@argusjs/dashboard</code> (Next.js)"]
+    Server["REST API Server<br/><code>@argusjs/server</code> (Fastify 5)"]
+    Core["Auth Engine<br/><code>@argusjs/core</code>"]
 
     subgraph "Required Adapters"
         direction LR
@@ -151,39 +151,39 @@ graph TB
 
 | Package | Description | Status |
 |---------|-------------|--------|
-| `@argus/core` | Core authentication engine, types, interfaces, and utilities | Stable |
-| `@argus/server` | Fastify 5 HTTP server with 60+ REST API routes | Stable |
-| `@argus/client` | Browser/Node SDK with React hooks (`AuthProvider`, `useAuth`) | Stable |
-| `@argus/dashboard` | Next.js admin dashboard for user management | Stable |
-| `@argus/db-postgres` | PostgreSQL adapter using Drizzle ORM | Stable |
-| `@argus/db-mongodb` | MongoDB adapter using native driver | Stable |
-| `@argus/db-memory` | In-memory database adapter (dev/test) | Stable |
-| `@argus/cache-redis` | Redis cache adapter using ioredis | Stable |
-| `@argus/cache-memory` | In-memory cache adapter (dev/test) | Stable |
-| `@argus/hash-argon2` | Argon2id password hashing (recommended) | Stable |
-| `@argus/hash-bcrypt` | bcrypt password hashing | Stable |
-| `@argus/hash-scrypt` | Node.js built-in scrypt hashing (no native deps) | Stable |
-| `@argus/token-jwt-rs256` | JWT signing with RS256 (RSA, supports JWKS) | Stable |
-| `@argus/token-jwt-es256` | JWT signing with ES256 (ECDSA, smaller tokens) | Stable |
-| `@argus/token-jwt-hs256` | JWT signing with HS256 (HMAC, symmetric) | Stable |
-| `@argus/email-sendgrid` | Email delivery via SendGrid API | Stable |
-| `@argus/email-ses` | Email delivery via AWS SES | Stable |
-| `@argus/email-smtp` | Email delivery via SMTP (Nodemailer) | Stable |
-| `@argus/email-memory` | In-memory email adapter (dev/test) | Stable |
-| `@argus/ratelimit-redis` | Redis-backed sliding window rate limiter | Stable |
-| `@argus/ratelimit-memory` | In-memory rate limiter (dev/test) | Stable |
-| `@argus/mfa-totp` | TOTP multi-factor auth (Google Authenticator, Authy) | Stable |
-| `@argus/mfa-sms` | SMS-based MFA via Twilio | Stable |
-| `@argus/mfa-webauthn` | WebAuthn/FIDO2 passkey MFA (SimpleWebAuthn) | Stable |
-| `@argus/oauth-google` | Google OAuth 2.0 provider | Stable |
-| `@argus/oauth-github` | GitHub OAuth 2.0 provider | Stable |
-| `@argus/oauth-apple` | Apple Sign In provider | Stable |
-| `@argus/oauth-microsoft` | Microsoft/Azure AD OAuth provider | Stable |
-| `@argus/oauth-discord` | Discord OAuth 2.0 provider | Stable |
-| `@argus/oauth-custom` | Custom OAuth/OIDC provider for any IdP | Stable |
-| `@argus/policy-zxcvbn` | Password strength estimation via zxcvbn | Stable |
-| `@argus/policy-hibp` | Breach check via Have I Been Pwned API | Stable |
-| `@argus/security-engine` | Brute force, anomaly detection, device trust, sharing detection | Stable |
+| `@argusjs/core` | Core authentication engine, types, interfaces, and utilities | Stable |
+| `@argusjs/server` | Fastify 5 HTTP server with 60+ REST API routes | Stable |
+| `@argusjs/client` | Browser/Node SDK with React hooks (`AuthProvider`, `useAuth`) | Stable |
+| `@argusjs/dashboard` | Next.js admin dashboard for user management | Stable |
+| `@argusjs/db-postgres` | PostgreSQL adapter using Drizzle ORM | Stable |
+| `@argusjs/db-mongodb` | MongoDB adapter using native driver | Stable |
+| `@argusjs/db-memory` | In-memory database adapter (dev/test) | Stable |
+| `@argusjs/cache-redis` | Redis cache adapter using ioredis | Stable |
+| `@argusjs/cache-memory` | In-memory cache adapter (dev/test) | Stable |
+| `@argusjs/hash-argon2` | Argon2id password hashing (recommended) | Stable |
+| `@argusjs/hash-bcrypt` | bcrypt password hashing | Stable |
+| `@argusjs/hash-scrypt` | Node.js built-in scrypt hashing (no native deps) | Stable |
+| `@argusjs/token-jwt-rs256` | JWT signing with RS256 (RSA, supports JWKS) | Stable |
+| `@argusjs/token-jwt-es256` | JWT signing with ES256 (ECDSA, smaller tokens) | Stable |
+| `@argusjs/token-jwt-hs256` | JWT signing with HS256 (HMAC, symmetric) | Stable |
+| `@argusjs/email-sendgrid` | Email delivery via SendGrid API | Stable |
+| `@argusjs/email-ses` | Email delivery via AWS SES | Stable |
+| `@argusjs/email-smtp` | Email delivery via SMTP (Nodemailer) | Stable |
+| `@argusjs/email-memory` | In-memory email adapter (dev/test) | Stable |
+| `@argusjs/ratelimit-redis` | Redis-backed sliding window rate limiter | Stable |
+| `@argusjs/ratelimit-memory` | In-memory rate limiter (dev/test) | Stable |
+| `@argusjs/mfa-totp` | TOTP multi-factor auth (Google Authenticator, Authy) | Stable |
+| `@argusjs/mfa-sms` | SMS-based MFA via Twilio | Stable |
+| `@argusjs/mfa-webauthn` | WebAuthn/FIDO2 passkey MFA (SimpleWebAuthn) | Stable |
+| `@argusjs/oauth-google` | Google OAuth 2.0 provider | Stable |
+| `@argusjs/oauth-github` | GitHub OAuth 2.0 provider | Stable |
+| `@argusjs/oauth-apple` | Apple Sign In provider | Stable |
+| `@argusjs/oauth-microsoft` | Microsoft/Azure AD OAuth provider | Stable |
+| `@argusjs/oauth-discord` | Discord OAuth 2.0 provider | Stable |
+| `@argusjs/oauth-custom` | Custom OAuth/OIDC provider for any IdP | Stable |
+| `@argusjs/policy-zxcvbn` | Password strength estimation via zxcvbn | Stable |
+| `@argusjs/policy-hibp` | Breach check via Have I Been Pwned API | Stable |
+| `@argusjs/security-engine` | Brute force, anomaly detection, device trust, sharing detection | Stable |
 
 ## Installation
 
@@ -191,56 +191,56 @@ Install the core and only the adapters you need:
 
 ```bash
 # Core + Server (always required)
-pnpm add @argus/core @argus/server
+pnpm add @argusjs/core @argusjs/server
 
 # Database (pick one)
-pnpm add @argus/db-postgres      # PostgreSQL via Drizzle ORM
-pnpm add @argus/db-mongodb       # MongoDB via native driver
-pnpm add @argus/db-memory        # In-memory (dev/test only)
+pnpm add @argusjs/db-postgres      # PostgreSQL via Drizzle ORM
+pnpm add @argusjs/db-mongodb       # MongoDB via native driver
+pnpm add @argusjs/db-memory        # In-memory (dev/test only)
 
 # Cache (pick one)
-pnpm add @argus/cache-redis      # Redis via ioredis
-pnpm add @argus/cache-memory     # In-memory (dev/test only)
+pnpm add @argusjs/cache-redis      # Redis via ioredis
+pnpm add @argusjs/cache-memory     # In-memory (dev/test only)
 
 # Password hashing (pick one)
-pnpm add @argus/hash-argon2      # Argon2id (recommended)
-pnpm add @argus/hash-bcrypt      # bcrypt (legacy compat)
-pnpm add @argus/hash-scrypt      # scrypt (no native deps)
+pnpm add @argusjs/hash-argon2      # Argon2id (recommended)
+pnpm add @argusjs/hash-bcrypt      # bcrypt (legacy compat)
+pnpm add @argusjs/hash-scrypt      # scrypt (no native deps)
 
 # JWT signing (pick one)
-pnpm add @argus/token-jwt-rs256  # RS256 asymmetric (recommended)
-pnpm add @argus/token-jwt-es256  # ES256 ECDSA (smaller tokens)
-pnpm add @argus/token-jwt-hs256  # HS256 symmetric (simplest)
+pnpm add @argusjs/token-jwt-rs256  # RS256 asymmetric (recommended)
+pnpm add @argusjs/token-jwt-es256  # ES256 ECDSA (smaller tokens)
+pnpm add @argusjs/token-jwt-hs256  # HS256 symmetric (simplest)
 
 # Email (pick one)
-pnpm add @argus/email-sendgrid   # SendGrid
-pnpm add @argus/email-ses        # AWS SES
-pnpm add @argus/email-smtp       # SMTP (Nodemailer)
-pnpm add @argus/email-memory     # In-memory (dev/test only)
+pnpm add @argusjs/email-sendgrid   # SendGrid
+pnpm add @argusjs/email-ses        # AWS SES
+pnpm add @argusjs/email-smtp       # SMTP (Nodemailer)
+pnpm add @argusjs/email-memory     # In-memory (dev/test only)
 
 # Rate limiting (pick one, optional)
-pnpm add @argus/ratelimit-redis  # Redis sliding window
-pnpm add @argus/ratelimit-memory # In-memory
+pnpm add @argusjs/ratelimit-redis  # Redis sliding window
+pnpm add @argusjs/ratelimit-memory # In-memory
 
 # MFA (optional, pick any)
-pnpm add @argus/mfa-totp         # TOTP (Google Authenticator)
-pnpm add @argus/mfa-sms          # SMS via Twilio
-pnpm add @argus/mfa-webauthn     # WebAuthn/FIDO2 passkeys
+pnpm add @argusjs/mfa-totp         # TOTP (Google Authenticator)
+pnpm add @argusjs/mfa-sms          # SMS via Twilio
+pnpm add @argusjs/mfa-webauthn     # WebAuthn/FIDO2 passkeys
 
 # OAuth (optional, pick any)
-pnpm add @argus/oauth-google
-pnpm add @argus/oauth-github
-pnpm add @argus/oauth-apple
-pnpm add @argus/oauth-microsoft
-pnpm add @argus/oauth-discord
-pnpm add @argus/oauth-custom     # Any OIDC provider
+pnpm add @argusjs/oauth-google
+pnpm add @argusjs/oauth-github
+pnpm add @argusjs/oauth-apple
+pnpm add @argusjs/oauth-microsoft
+pnpm add @argusjs/oauth-discord
+pnpm add @argusjs/oauth-custom     # Any OIDC provider
 
 # Password policy (optional, pick any)
-pnpm add @argus/policy-zxcvbn    # Strength estimation
-pnpm add @argus/policy-hibp      # Breach database check
+pnpm add @argusjs/policy-zxcvbn    # Strength estimation
+pnpm add @argusjs/policy-hibp      # Breach database check
 
 # Security engine (optional)
-pnpm add @argus/security-engine
+pnpm add @argusjs/security-engine
 ```
 
 ## Configuration
@@ -248,19 +248,19 @@ pnpm add @argus/security-engine
 Full annotated configuration with all available options:
 
 ```typescript
-import { Argus } from '@argus/core';
-import { PostgresAdapter } from '@argus/db-postgres';
-import { RedisCacheAdapter } from '@argus/cache-redis';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { SendGridEmailProvider } from '@argus/email-sendgrid';
-import { RedisRateLimiter } from '@argus/ratelimit-redis';
-import { TOTPProvider } from '@argus/mfa-totp';
-import { GoogleOAuth } from '@argus/oauth-google';
-import { GitHubOAuth } from '@argus/oauth-github';
-import { ZxcvbnPolicy } from '@argus/policy-zxcvbn';
-import { HIBPPolicy } from '@argus/policy-hibp';
-import { DefaultSecurityEngine } from '@argus/security-engine';
+import { Argus } from '@argusjs/core';
+import { PostgresAdapter } from '@argusjs/db-postgres';
+import { RedisCacheAdapter } from '@argusjs/cache-redis';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { SendGridEmailProvider } from '@argusjs/email-sendgrid';
+import { RedisRateLimiter } from '@argusjs/ratelimit-redis';
+import { TOTPProvider } from '@argusjs/mfa-totp';
+import { GoogleOAuth } from '@argusjs/oauth-google';
+import { GitHubOAuth } from '@argusjs/oauth-github';
+import { ZxcvbnPolicy } from '@argusjs/policy-zxcvbn';
+import { HIBPPolicy } from '@argusjs/policy-hibp';
+import { DefaultSecurityEngine } from '@argusjs/security-engine';
 
 const argus = new Argus({
   // ── Required Adapters ─────────────────────────────────────────────────
@@ -620,10 +620,10 @@ The [`examples/`](examples/) directory contains runnable examples:
 
 ## Plugin Development
 
-Every adapter implements a TypeScript interface from `@argus/core`. To create your own:
+Every adapter implements a TypeScript interface from `@argusjs/core`. To create your own:
 
 ```typescript
-import type { PasswordHasher } from '@argus/core';
+import type { PasswordHasher } from '@argusjs/core';
 
 export class MyHasher implements PasswordHasher {
   async hash(password: string): Promise<string> {

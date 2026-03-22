@@ -2,12 +2,12 @@
 // Best for: SaaS, e-commerce, social platforms
 // Refresh p50: ~12ms | Login p50: ~120ms | Registration p50: ~500ms
 
-import { Argus } from '@argus/core';
-import { PostgresAdapter } from '@argus/db-postgres';
-import { RedisCacheAdapter } from '@argus/cache-redis';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { MemoryEmailProvider } from '@argus/email-memory';
+import { Argus } from '@argusjs/core';
+import { PostgresAdapter } from '@argusjs/db-postgres';
+import { RedisCacheAdapter } from '@argusjs/cache-redis';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
 
 async function main() {
   const argus = new Argus({

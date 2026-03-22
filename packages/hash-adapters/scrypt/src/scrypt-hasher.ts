@@ -1,5 +1,5 @@
 import { scrypt, randomBytes, timingSafeEqual, type BinaryLike, type ScryptOptions } from 'node:crypto';
-import type { PasswordHasher } from '@argus/core';
+import type { PasswordHasher } from '@argusjs/core';
 
 function scryptAsync(password: BinaryLike, salt: BinaryLike, keylen: number, options: ScryptOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {

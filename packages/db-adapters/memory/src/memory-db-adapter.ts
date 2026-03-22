@@ -8,7 +8,7 @@ import type {
   CreateVerificationInput, LinkOAuthInput, SaveMFAInput, CreateOrgInput, AddOrgMemberInput,
   CreateOrgInviteInput, CreateApiKeyInput, CreateWebhookInput,
   AuditLogFilter, UserFilter, SystemStats, UserDataExport,
-} from '@argus/core';
+} from '@argusjs/core';
 
 export class MemoryDbAdapter implements DbAdapter {
   private users = new Map<string, User>();

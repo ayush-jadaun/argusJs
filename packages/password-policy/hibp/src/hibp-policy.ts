@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { PasswordPolicy, PasswordPolicyResult } from '@argus/core';
+import type { PasswordPolicy, PasswordPolicyResult } from '@argusjs/core';
 
 export class HIBPPolicy implements PasswordPolicy {
   name = 'hibp';

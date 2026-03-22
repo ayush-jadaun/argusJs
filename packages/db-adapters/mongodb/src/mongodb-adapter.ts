@@ -9,7 +9,7 @@ import type {
   CreateVerificationInput, LinkOAuthInput, SaveMFAInput, CreateOrgInput, AddOrgMemberInput,
   CreateOrgInviteInput, CreateApiKeyInput, CreateWebhookInput,
   AuditLogFilter, UserFilter, SystemStats, UserDataExport,
-} from '@argus/core';
+} from '@argusjs/core';
 
 export interface MongoDbAdapterConfig {
   url: string;

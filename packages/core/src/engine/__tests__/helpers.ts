@@ -2,10 +2,10 @@ import type { TokenProvider, JsonWebKeySet } from '../../interfaces/token-provid
 import type { PasswordHasher } from '../../interfaces/password-hasher.js';
 import type { AccessTokenClaims } from '../../types/responses.js';
 import type { ArgusConfig } from '../../types/config.js';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
-import { MemoryRateLimiter } from '@argus/ratelimit-memory';
-import { MemoryEmailProvider } from '@argus/email-memory';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
+import { MemoryRateLimiter } from '@argusjs/ratelimit-memory';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
 import { Argus } from '../argus.js';
 
 export class MockHasher implements PasswordHasher {

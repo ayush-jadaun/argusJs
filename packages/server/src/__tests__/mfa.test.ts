@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createApp } from '../app.js';
-import { Argus } from '@argus/core';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
-import { MemoryRateLimiter } from '@argus/ratelimit-memory';
-import { MemoryEmailProvider } from '@argus/email-memory';
+import { Argus } from '@argusjs/core';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
+import { MemoryRateLimiter } from '@argusjs/ratelimit-memory';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
 import type { FastifyInstance } from 'fastify';
-import type { MFAProvider } from '@argus/core';
+import type { MFAProvider } from '@argusjs/core';
 
 class MockHasher {
   name = 'mock';

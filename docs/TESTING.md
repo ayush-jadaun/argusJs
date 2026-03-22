@@ -15,11 +15,11 @@ ArgusJS has a comprehensive test suite covering unit tests, integration tests, b
 
 | Package | Unit Tests | Notes |
 |---------|-----------|-------|
-| `@argus/core` | 143 | Registration, login, logout, refresh, MFA, organizations, RBAC, API keys, webhooks, events |
-| `@argus/server` | 55 | Route handlers, middleware, error handling, request validation |
-| `@argus/client` | 8 | Client SDK, React hooks |
-| `@argus/security-engine` | 14 | Brute force, anomaly detection, sharing detection, device trust |
-| `@argus/db-mongodb` | 12 | MongoDB adapter CRUD, atomic operations, connection lifecycle |
+| `@argusjs/core` | 143 | Registration, login, logout, refresh, MFA, organizations, RBAC, API keys, webhooks, events |
+| `@argusjs/server` | 55 | Route handlers, middleware, error handling, request validation |
+| `@argusjs/client` | 8 | Client SDK, React hooks |
+| `@argusjs/security-engine` | 14 | Brute force, anomaly detection, sharing detection, device trust |
+| `@argusjs/db-mongodb` | 12 | MongoDB adapter CRUD, atomic operations, connection lifecycle |
 | Integration | 54 | Full auth flows, token rotation, concurrent access, data integrity |
 | Battle tests | 22 | TOCTOU races, token replay, session limit edge cases |
 | **Total** | **308** | |
@@ -145,11 +145,11 @@ Core engine tests use a helper function that creates an `Argus` instance with al
 ```typescript
 // packages/core/src/engine/__tests__/helpers.ts
 import { Argus } from '../argus.js';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { MemoryEmailProvider } from '@argus/email-memory';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
 
 export async function createTestArgus(overrides = {}) {
   const argus = new Argus({

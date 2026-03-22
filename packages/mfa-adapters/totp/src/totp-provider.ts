@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { authenticator } from 'otplib';
-import type { MFAProvider, User, MFASetupData } from '@argus/core';
+import type { MFAProvider, User, MFASetupData } from '@argusjs/core';
 import { type TOTPConfig, DEFAULT_TOTP_CONFIG } from './config.js';
 
 export class TOTPProvider implements MFAProvider {

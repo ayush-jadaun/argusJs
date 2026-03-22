@@ -1,5 +1,5 @@
 {
-  "name": "@argus/db-mongodb",
+  "name": "@argusjs/db-mongodb",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@argus/core": "workspace:*",
+    "@argusjs/core": "workspace:*",
     "mongodb": "^6.12.0"
   },
   "devDependencies": {

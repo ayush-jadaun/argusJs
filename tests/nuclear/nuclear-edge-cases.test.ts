@@ -1,17 +1,17 @@
 import { describe, it, expect, vi } from 'vitest';
-import { Argus, Errors, ArgusError } from '@argus/core';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
-import { MemoryRateLimiter } from '@argus/ratelimit-memory';
-import { MemoryEmailProvider } from '@argus/email-memory';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { BcryptHasher } from '@argus/hash-bcrypt';
-import { ScryptHasher } from '@argus/hash-scrypt';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { ES256TokenProvider } from '@argus/token-jwt-es256';
-import { HS256TokenProvider } from '@argus/token-jwt-hs256';
-import { TOTPProvider } from '@argus/mfa-totp';
-import { DefaultSecurityEngine } from '@argus/security-engine';
+import { Argus, Errors, ArgusError } from '@argusjs/core';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
+import { MemoryRateLimiter } from '@argusjs/ratelimit-memory';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { BcryptHasher } from '@argusjs/hash-bcrypt';
+import { ScryptHasher } from '@argusjs/hash-scrypt';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { ES256TokenProvider } from '@argusjs/token-jwt-es256';
+import { HS256TokenProvider } from '@argusjs/token-jwt-hs256';
+import { TOTPProvider } from '@argusjs/mfa-totp';
+import { DefaultSecurityEngine } from '@argusjs/security-engine';
 
 function createArgus(overrides?: any) {
   const db = new MemoryDbAdapter();
@@ -354,7 +354,7 @@ describe('NUCLEAR EDGE CASES', () => {
   // ═══════════════════════════════════════
   describe('Crypto Integrity', () => {
     it('SHA-256 hash of empty string should be deterministic', async () => {
-      const { hashToken } = await import('@argus/core');
+      const { hashToken } = await import('@argusjs/core');
       const h1 = hashToken('');
       const h2 = hashToken('');
       expect(h1).toBe(h2);
@@ -362,18 +362,18 @@ describe('NUCLEAR EDGE CASES', () => {
     });
 
     it('AES-256-GCM should reject wrong key length', async () => {
-      const { encryptAES256GCM } = await import('@argus/core');
+      const { encryptAES256GCM } = await import('@argusjs/core');
       expect(() => encryptAES256GCM('secret', 'tooshort')).toThrow();
     });
 
     it('generateToken should produce unique values', async () => {
-      const { generateToken } = await import('@argus/core');
+      const { generateToken } = await import('@argusjs/core');
       const tokens = new Set(Array.from({ length: 1000 }, () => generateToken(32)));
       expect(tokens.size).toBe(1000);
     });
 
     it('timingSafeEqual should not leak via early return on length mismatch', async () => {
-      const { timingSafeEqual } = await import('@argus/core');
+      const { timingSafeEqual } = await import('@argusjs/core');
       // Different lengths should return false (but not throw)
       expect(timingSafeEqual('short', 'much longer string')).toBe(false);
     });
@@ -971,7 +971,7 @@ describe('NUCLEAR EDGE CASES', () => {
   // ═══════════════════════════════════════
   describe('AES-256-GCM Roundtrip', () => {
     it('should encrypt and decrypt correctly', async () => {
-      const { encryptAES256GCM, decryptAES256GCM } = await import('@argus/core');
+      const { encryptAES256GCM, decryptAES256GCM } = await import('@argusjs/core');
       const key = 'a'.repeat(64); // 32 bytes hex
       const plaintext = 'super secret MFA data';
       const ciphertext = encryptAES256GCM(plaintext, key);
@@ -980,7 +980,7 @@ describe('NUCLEAR EDGE CASES', () => {
     });
 
     it('should produce different ciphertexts for same plaintext (random IV)', async () => {
-      const { encryptAES256GCM } = await import('@argus/core');
+      const { encryptAES256GCM } = await import('@argusjs/core');
       const key = 'b'.repeat(64);
       const c1 = encryptAES256GCM('same', key);
       const c2 = encryptAES256GCM('same', key);
@@ -988,7 +988,7 @@ describe('NUCLEAR EDGE CASES', () => {
     });
 
     it('should fail to decrypt with wrong key', async () => {
-      const { encryptAES256GCM, decryptAES256GCM } = await import('@argus/core');
+      const { encryptAES256GCM, decryptAES256GCM } = await import('@argusjs/core');
       const key1 = 'a'.repeat(64);
       const key2 = 'b'.repeat(64);
       const ciphertext = encryptAES256GCM('secret', key1);
@@ -996,7 +996,7 @@ describe('NUCLEAR EDGE CASES', () => {
     });
 
     it('should fail on malformed ciphertext', async () => {
-      const { decryptAES256GCM } = await import('@argus/core');
+      const { decryptAES256GCM } = await import('@argusjs/core');
       const key = 'a'.repeat(64);
       expect(() => decryptAES256GCM('not:valid:hex', key)).toThrow();
     });

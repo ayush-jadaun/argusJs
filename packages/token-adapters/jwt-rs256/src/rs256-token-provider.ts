@@ -12,7 +12,7 @@ import type {
   JsonWebKeySet,
   JsonWebKey,
   AccessTokenClaims,
-} from '@argus/core';
+} from '@argusjs/core';
 
 export interface RS256Config {
   privateKey?: string;

@@ -1,11 +1,11 @@
 // Running ArgusJS as a Fastify REST API
-import { Argus } from '@argus/core';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { MemoryEmailProvider } from '@argus/email-memory';
-import { createApp } from '@argus/server';
+import { Argus } from '@argusjs/core';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
+import { createApp } from '@argusjs/server';
 
 async function main() {
   const argus = new Argus({

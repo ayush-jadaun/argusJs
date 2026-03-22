@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { AccessTokenClaims } from '@argus/core';
+import type { AccessTokenClaims } from '@argusjs/core';
 
 // Type augmentation
 declare module 'fastify' {

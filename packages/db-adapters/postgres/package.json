@@ -1,5 +1,5 @@
 {
-  "name": "@argus/db-postgres",
+  "name": "@argusjs/db-postgres",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -16,7 +16,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@argus/core": "workspace:*",
+    "@argusjs/core": "workspace:*",
     "drizzle-orm": "^0.44.0",
     "postgres": "^3.4.0"
   },

@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import type { CacheAdapter } from '@argus/core';
+import type { CacheAdapter } from '@argusjs/core';
 
 export interface RedisCacheConfig {
   url?: string;

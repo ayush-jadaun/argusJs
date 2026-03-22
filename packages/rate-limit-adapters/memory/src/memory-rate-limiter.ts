@@ -1,4 +1,4 @@
-import type { RateLimiter, RateLimitResult } from '@argus/core';
+import type { RateLimiter, RateLimitResult } from '@argusjs/core';
 
 export class MemoryRateLimiter implements RateLimiter {
   private store: Map<string, number[]> = new Map();

@@ -163,9 +163,9 @@ const argus = new Argus({
 
 ```typescript
 // Switch with one line:
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { ES256TokenProvider } from '@argus/token-jwt-es256';
-import { HS256TokenProvider } from '@argus/token-jwt-hs256';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { ES256TokenProvider } from '@argusjs/token-jwt-es256';
+import { HS256TokenProvider } from '@argusjs/token-jwt-hs256';
 
 token: new RS256TokenProvider({ ... })  // 5ms sign, JWKS works
 token: new ES256TokenProvider({ ... })  // 2ms sign, JWKS works, smaller tokens

@@ -1,4 +1,4 @@
-import type { DbAdapter, SharingDetection, Session } from '@argus/core';
+import type { DbAdapter, SharingDetection, Session } from '@argusjs/core';
 
 export interface SharingConfig {
   maxConcurrentIPs: number;

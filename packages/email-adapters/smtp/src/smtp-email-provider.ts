@@ -7,7 +7,7 @@ import type {
   User,
   OrgInvite,
   Organization,
-} from '@argus/core';
+} from '@argusjs/core';
 
 export interface SMTPConfig {
   host: string;

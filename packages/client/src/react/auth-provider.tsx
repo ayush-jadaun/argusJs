@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import type { AuthResponse, UserResponse, MFAChallengeResponse, SessionResponse, MFASetupData } from '@argus/core';
+import type { AuthResponse, UserResponse, MFAChallengeResponse, SessionResponse, MFASetupData } from '@argusjs/core';
 import { ArgusClient } from '../argus-client.js';
 import type { ArgusClientConfig } from '../argus-client.js';
 

@@ -1,4 +1,4 @@
-import type { CacheAdapter, DbAdapter, TrustedDevice } from '@argus/core';
+import type { CacheAdapter, DbAdapter, TrustedDevice } from '@argusjs/core';
 
 export class DeviceTrust {
   constructor(

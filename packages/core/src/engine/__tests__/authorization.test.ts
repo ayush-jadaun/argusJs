@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createTestArgus } from './helpers.js';
 import { AuthorizationEngine } from '../authorization.js';
-import { MemoryDbAdapter } from '@argus/db-memory';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
 
 describe('AuthorizationEngine', () => {
   // ─── Permission Matching ──────────────────────────────────────────

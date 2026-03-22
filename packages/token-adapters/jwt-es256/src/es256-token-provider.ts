@@ -1,6 +1,6 @@
 import * as jose from 'jose';
-import type { TokenProvider, JsonWebKeySet, JsonWebKey } from '@argus/core';
-import type { AccessTokenClaims } from '@argus/core';
+import type { TokenProvider, JsonWebKeySet, JsonWebKey } from '@argusjs/core';
+import type { AccessTokenClaims } from '@argusjs/core';
 
 export interface ES256Config {
   privateKey?: string;

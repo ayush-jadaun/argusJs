@@ -116,7 +116,7 @@ jobs:
 
       # Publish each package in dependency order
       # Core must publish first, then adapters, then server/client/dashboard
-      - name: Publish @argus/core
+      - name: Publish @argusjs/core
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: cd packages/core && pnpm publish --access public --no-git-checks
         env:

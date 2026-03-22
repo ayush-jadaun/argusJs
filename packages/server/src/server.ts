@@ -4,13 +4,13 @@ import { cpus } from 'node:os';
 process.env.UV_THREADPOOL_SIZE = String(Math.max(16, cpus().length * 2));
 
 import { createApp } from './app.js';
-import { Argus } from '@argus/core';
-import { PostgresAdapter } from '@argus/db-postgres';
-import { RedisCacheAdapter } from '@argus/cache-redis';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { MemoryEmailProvider } from '@argus/email-memory';
-import { RedisRateLimiter } from '@argus/ratelimit-redis';
+import { Argus } from '@argusjs/core';
+import { PostgresAdapter } from '@argusjs/db-postgres';
+import { RedisCacheAdapter } from '@argusjs/cache-redis';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
+import { RedisRateLimiter } from '@argusjs/ratelimit-redis';
 
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -31,7 +31,7 @@ async function main() {
     ? new RedisCacheAdapter({ url: redisUrl })
     : await (async () => {
         console.warn('No REDIS_URL — using in-memory cache (not for production)');
-        const { MemoryCacheAdapter } = await import('@argus/cache-memory');
+        const { MemoryCacheAdapter } = await import('@argusjs/cache-memory');
         return new MemoryCacheAdapter();
       })();
 

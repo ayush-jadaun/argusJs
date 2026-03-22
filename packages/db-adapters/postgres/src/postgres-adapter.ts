@@ -11,7 +11,7 @@ import type {
   CreateVerificationInput, LinkOAuthInput, SaveMFAInput, CreateOrgInput, AddOrgMemberInput,
   CreateOrgInviteInput, CreateApiKeyInput, CreateWebhookInput,
   AuditLogFilter, UserFilter, SystemStats, UserDataExport,
-} from '@argus/core';
+} from '@argusjs/core';
 
 import * as schema from './schema/index.js';
 

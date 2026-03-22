@@ -1,5 +1,5 @@
 import zxcvbn from 'zxcvbn';
-import type { PasswordPolicy, PasswordPolicyResult } from '@argus/core';
+import type { PasswordPolicy, PasswordPolicyResult } from '@argusjs/core';
 
 export interface ZxcvbnConfig {
   minScore?: number; // 0-4, default 3

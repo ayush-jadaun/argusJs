@@ -2,7 +2,7 @@ import type {
   CacheAdapter, DbAdapter, SecurityEngine,
   LoginRiskContext, RiskAssessment, Session, TrustedDevice,
   SharingDetection, BruteForceResult, LockStatus,
-} from '@argus/core';
+} from '@argusjs/core';
 import { BruteForceProtection } from './brute-force.js';
 import { AnomalyDetector } from './anomaly-detector.js';
 import { SharingDetector } from './sharing-detector.js';

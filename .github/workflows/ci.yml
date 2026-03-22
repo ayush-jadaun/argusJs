@@ -439,7 +439,7 @@ jobs:
           for pkg in $(find packages -name "package.json" -not -path "*/node_modules/*" -not -path "*/dashboard/*" | sort); do
             dir=$(dirname "$pkg")
             name=$(node -e "console.log(require('./$pkg').name)")
-            if [ ! -d "$dir/dist" ] && [ "$name" != "@argus/dashboard" ]; then
+            if [ ! -d "$dir/dist" ] && [ "$name" != "@argusjs/dashboard" ]; then
               echo "❌ $name: missing dist/"
               MISSING=$((MISSING + 1))
             else

@@ -7,7 +7,7 @@ import type {
   CreateUserInput, CreateSessionInput, CreateRefreshTokenInput, CreateResetTokenInput,
   CreateVerificationInput, LinkOAuthInput, SaveMFAInput, CreateOrgInput, AddOrgMemberInput,
   CreateOrgInviteInput, CreateApiKeyInput, CreateWebhookInput,
-} from '@argus/core';
+} from '@argusjs/core';
 
 describe('MemoryDbAdapter', () => {
   let db: MemoryDbAdapter;

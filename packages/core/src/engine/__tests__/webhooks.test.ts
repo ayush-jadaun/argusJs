@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createTestArgus } from './helpers.js';
 import { WebhookDispatcher } from '../webhook-dispatcher.js';
 import { ArgusEventEmitter } from '../event-emitter.js';
-import { MemoryDbAdapter } from '@argus/db-memory';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
 import { createHmac } from 'node:crypto';
 
 describe('Argus.webhooks', () => {

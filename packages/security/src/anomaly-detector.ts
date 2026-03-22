@@ -1,4 +1,4 @@
-import type { CacheAdapter, LoginRiskContext, RiskAssessment, RiskFactor } from '@argus/core';
+import type { CacheAdapter, LoginRiskContext, RiskAssessment, RiskFactor } from '@argusjs/core';
 
 export interface RiskConfig {
   newDeviceScore: number;

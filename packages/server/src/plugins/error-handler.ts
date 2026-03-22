@@ -1,5 +1,5 @@
 import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
-import { ArgusError } from '@argus/core';
+import { ArgusError } from '@argusjs/core';
 
 export function errorHandler(error: FastifyError, request: FastifyRequest, reply: FastifyReply): void {
   if (error instanceof ArgusError) {

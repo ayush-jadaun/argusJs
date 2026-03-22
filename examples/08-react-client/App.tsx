@@ -1,5 +1,5 @@
-// React app using @argus/client hooks
-import { AuthProvider, useAuth, useSession } from '@argus/client/react';
+// React app using @argusjs/client hooks
+import { AuthProvider, useAuth, useSession } from '@argusjs/client/react';
 
 function App() {
   return (

@@ -1,4 +1,4 @@
-import type { CacheAdapter } from '@argus/core';
+import type { CacheAdapter } from '@argusjs/core';
 
 interface CacheEntry {
   value: string;

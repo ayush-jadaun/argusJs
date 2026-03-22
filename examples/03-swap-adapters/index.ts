@@ -1,34 +1,34 @@
 // Demonstrates pluggability — swap ANY adapter with one line
 
-import { Argus } from '@argus/core';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
-import { MemoryEmailProvider } from '@argus/email-memory';
+import { Argus } from '@argusjs/core';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
 
 // === SWAP HASHING ALGORITHM ===
 // Option A: Argon2id (recommended for production)
-import { Argon2Hasher } from '@argus/hash-argon2';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
 const hasherA = new Argon2Hasher();
 
 // Option B: bcrypt (legacy compatibility)
-import { BcryptHasher } from '@argus/hash-bcrypt';
+import { BcryptHasher } from '@argusjs/hash-bcrypt';
 const hasherB = new BcryptHasher({ rounds: 12 });
 
 // Option C: scrypt (no native dependencies)
-import { ScryptHasher } from '@argus/hash-scrypt';
+import { ScryptHasher } from '@argusjs/hash-scrypt';
 const hasherC = new ScryptHasher({ cost: 16384 });
 
 // === SWAP TOKEN SIGNING ===
 // Option A: RS256 (asymmetric — recommended, supports JWKS)
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
 const tokenA = new RS256TokenProvider({ issuer: 'my-app', audience: ['my-app'] });
 
 // Option B: ES256 (ECDSA — smaller tokens, faster signing)
-import { ES256TokenProvider } from '@argus/token-jwt-es256';
+import { ES256TokenProvider } from '@argusjs/token-jwt-es256';
 const tokenB = new ES256TokenProvider({ issuer: 'my-app', audience: ['my-app'] });
 
 // Option C: HS256 (symmetric — simplest, no JWKS)
-import { HS256TokenProvider } from '@argus/token-jwt-hs256';
+import { HS256TokenProvider } from '@argusjs/token-jwt-hs256';
 const tokenC = new HS256TokenProvider({ secret: 'my-secret-at-least-32-chars-long!!', issuer: 'my-app', audience: ['my-app'] });
 
 // === SWAP REFRESH TOKEN BEHAVIOR ===

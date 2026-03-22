@@ -5,7 +5,7 @@ import {
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import { isoUint8Array } from '@simplewebauthn/server/helpers';
-import type { MFAProvider, User, MFASetupData } from '@argus/core';
+import type { MFAProvider, User, MFASetupData } from '@argusjs/core';
 
 export interface WebAuthnConfig {
   rpName: string;

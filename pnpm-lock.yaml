@@ -35,7 +35,7 @@ importers:
 
   packages/cache-adapters/memory:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -48,7 +48,7 @@ importers:
 
   packages/cache-adapters/redis:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       ioredis:
@@ -64,7 +64,7 @@ importers:
 
   packages/client:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -126,7 +126,7 @@ importers:
 
   packages/db-adapters/memory:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -139,7 +139,7 @@ importers:
 
   packages/db-adapters/mongodb:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       mongodb:
@@ -155,7 +155,7 @@ importers:
 
   packages/db-adapters/postgres:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       drizzle-orm:
@@ -177,7 +177,7 @@ importers:
 
   packages/email-adapters/memory:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -190,7 +190,7 @@ importers:
 
   packages/email-adapters/sendgrid:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       '@sendgrid/mail':
@@ -206,7 +206,7 @@ importers:
 
   packages/email-adapters/ses:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       '@aws-sdk/client-ses':
@@ -222,7 +222,7 @@ importers:
 
   packages/email-adapters/smtp:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       nodemailer:
@@ -241,7 +241,7 @@ importers:
 
   packages/hash-adapters/argon2:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       argon2:
@@ -257,7 +257,7 @@ importers:
 
   packages/hash-adapters/bcrypt:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       bcrypt:
@@ -276,7 +276,7 @@ importers:
 
   packages/hash-adapters/scrypt:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -289,7 +289,7 @@ importers:
 
   packages/mfa-adapters/sms:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       twilio:
@@ -305,7 +305,7 @@ importers:
 
   packages/mfa-adapters/totp:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       otplib:
@@ -321,7 +321,7 @@ importers:
 
   packages/mfa-adapters/webauthn:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       '@simplewebauthn/server':
@@ -337,7 +337,7 @@ importers:
 
   packages/oauth-providers/apple:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -350,7 +350,7 @@ importers:
 
   packages/oauth-providers/custom:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -363,7 +363,7 @@ importers:
 
   packages/oauth-providers/discord:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -376,7 +376,7 @@ importers:
 
   packages/oauth-providers/github:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -389,7 +389,7 @@ importers:
 
   packages/oauth-providers/google:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -402,7 +402,7 @@ importers:
 
   packages/oauth-providers/microsoft:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -415,7 +415,7 @@ importers:
 
   packages/password-policy/hibp:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -428,7 +428,7 @@ importers:
 
   packages/password-policy/zxcvbn:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       zxcvbn:
@@ -447,7 +447,7 @@ importers:
 
   packages/rate-limit-adapters/memory:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
     devDependencies:
@@ -460,7 +460,7 @@ importers:
 
   packages/rate-limit-adapters/redis:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       ioredis:
@@ -476,7 +476,7 @@ importers:
 
   packages/security:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -489,31 +489,31 @@ importers:
 
   packages/server:
     dependencies:
-      '@argus/cache-memory':
+      '@argusjs/cache-memory':
         specifier: workspace:*
         version: link:../cache-adapters/memory
-      '@argus/cache-redis':
+      '@argusjs/cache-redis':
         specifier: workspace:*
         version: link:../cache-adapters/redis
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../core
-      '@argus/db-postgres':
+      '@argusjs/db-postgres':
         specifier: workspace:*
         version: link:../db-adapters/postgres
-      '@argus/email-memory':
+      '@argusjs/email-memory':
         specifier: workspace:*
         version: link:../email-adapters/memory
-      '@argus/hash-argon2':
+      '@argusjs/hash-argon2':
         specifier: workspace:*
         version: link:../hash-adapters/argon2
-      '@argus/ratelimit-memory':
+      '@argusjs/ratelimit-memory':
         specifier: workspace:*
         version: link:../rate-limit-adapters/memory
-      '@argus/ratelimit-redis':
+      '@argusjs/ratelimit-redis':
         specifier: workspace:*
         version: link:../rate-limit-adapters/redis
-      '@argus/token-jwt-rs256':
+      '@argusjs/token-jwt-rs256':
         specifier: workspace:*
         version: link:../token-adapters/jwt-rs256
       '@fastify/compress':
@@ -529,7 +529,7 @@ importers:
         specifier: ^5.0.0
         version: 5.8.2
     devDependencies:
-      '@argus/db-memory':
+      '@argusjs/db-memory':
         specifier: workspace:*
         version: link:../db-adapters/memory
       tsx:
@@ -544,7 +544,7 @@ importers:
 
   packages/token-adapters/jwt-es256:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       jose:
@@ -560,7 +560,7 @@ importers:
 
   packages/token-adapters/jwt-hs256:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       jose:
@@ -576,7 +576,7 @@ importers:
 
   packages/token-adapters/jwt-rs256:
     dependencies:
-      '@argus/core':
+      '@argusjs/core':
         specifier: workspace:*
         version: link:../../core
       jose:

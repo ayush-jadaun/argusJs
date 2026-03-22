@@ -1,5 +1,5 @@
 import argon2 from 'argon2';
-import type { PasswordHasher } from '@argus/core';
+import type { PasswordHasher } from '@argusjs/core';
 
 export interface Argon2Config {
   memoryCost?: number;    // KB, default 65536 (64MB)

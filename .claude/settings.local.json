@@ -5,7 +5,7 @@
       "Bash(pnpm install:*)",
       "mcp__plugin_context7_context7__query-docs",
       "Bash(pnpm build:*)",
-      "Bash(pnpm --filter @argus/email-smtp test)",
+      "Bash(pnpm --filter @argusjs/email-smtp test)",
       "Bash(pnpm test:*)",
       "Bash(pnpm run:*)",
       "Bash(DATABASE_URL=\"postgres://postgres:postgres@localhost:5434/postgres\" REDIS_URL=\"redis://localhost:6381\" npx vitest run tests/integration/edge-cases.test.ts --config tests/integration/vitest.config.ts)",

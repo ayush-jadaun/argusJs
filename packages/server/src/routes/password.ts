@@ -192,7 +192,7 @@ export async function passwordRoutes(app: FastifyInstance): Promise<void> {
 
     // 12. Write audit
     if (config.audit?.enabled) {
-      const { generateUUID } = await import('@argus/core');
+      const { generateUUID } = await import('@argusjs/core');
       await db.writeAuditLog({
         id: generateUUID(),
         userId,

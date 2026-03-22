@@ -1,4 +1,4 @@
-import type { OAuthProviderAdapter, OAuthTokens, OAuthUserProfile } from '@argus/core';
+import type { OAuthProviderAdapter, OAuthTokens, OAuthUserProfile } from '@argusjs/core';
 
 export interface GoogleOAuthConfig {
   clientId: string;

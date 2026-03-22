@@ -1,7 +1,7 @@
 import type {
   AuthResponse, UserResponse, MFAChallengeResponse, SessionResponse,
   MFASetupData, ErrorResponse,
-} from '@argus/core';
+} from '@argusjs/core';
 
 export interface ArgusClientConfig {
   baseUrl: string;

@@ -5,7 +5,7 @@ import type {
   User,
   OrgInvite,
   Organization,
-} from '@argus/core';
+} from '@argusjs/core';
 
 export interface SentEmail {
   type: 'verification' | 'password_reset' | 'security_alert' | 'welcome' | 'org_invite' | 'device_verification';

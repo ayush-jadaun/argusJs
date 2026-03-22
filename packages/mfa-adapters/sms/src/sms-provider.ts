@@ -1,6 +1,6 @@
 import { randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import twilio from 'twilio';
-import type { MFAProvider, User, MFASetupData } from '@argus/core';
+import type { MFAProvider, User, MFASetupData } from '@argusjs/core';
 
 export interface SMSConfig {
   accountSid: string;

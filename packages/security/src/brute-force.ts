@@ -1,4 +1,4 @@
-import type { CacheAdapter, BruteForceResult, LockStatus } from '@argus/core';
+import type { CacheAdapter, BruteForceResult, LockStatus } from '@argusjs/core';
 
 export interface BruteForceConfig {
   maxAttempts: number;

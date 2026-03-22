@@ -1,11 +1,11 @@
 // OAuth login with Google
-import { Argus } from '@argus/core';
-import { MemoryDbAdapter } from '@argus/db-memory';
-import { MemoryCacheAdapter } from '@argus/cache-memory';
-import { Argon2Hasher } from '@argus/hash-argon2';
-import { RS256TokenProvider } from '@argus/token-jwt-rs256';
-import { MemoryEmailProvider } from '@argus/email-memory';
-import { GoogleOAuth } from '@argus/oauth-google';
+import { Argus } from '@argusjs/core';
+import { MemoryDbAdapter } from '@argusjs/db-memory';
+import { MemoryCacheAdapter } from '@argusjs/cache-memory';
+import { Argon2Hasher } from '@argusjs/hash-argon2';
+import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
+import { MemoryEmailProvider } from '@argusjs/email-memory';
+import { GoogleOAuth } from '@argusjs/oauth-google';
 
 async function main() {
   const argus = new Argus({
@@ -36,12 +36,12 @@ async function main() {
   // result contains: { user, accessToken, refreshToken }
 
   console.log('\nSupported OAuth providers:');
-  console.log('  - Google (@argus/oauth-google)');
-  console.log('  - GitHub (@argus/oauth-github)');
-  console.log('  - Apple (@argus/oauth-apple)');
-  console.log('  - Microsoft (@argus/oauth-microsoft)');
-  console.log('  - Discord (@argus/oauth-discord)');
-  console.log('  - Custom OIDC (@argus/oauth-custom)');
+  console.log('  - Google (@argusjs/oauth-google)');
+  console.log('  - GitHub (@argusjs/oauth-github)');
+  console.log('  - Apple (@argusjs/oauth-apple)');
+  console.log('  - Microsoft (@argusjs/oauth-microsoft)');
+  console.log('  - Discord (@argusjs/oauth-discord)');
+  console.log('  - Custom OIDC (@argusjs/oauth-custom)');
 
   await argus.shutdown();
 }

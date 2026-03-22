@@ -5,7 +5,7 @@
 - [ ] Benchmark vs **FusionAuth** — Docker image pulled, benchmark scripts exist at `benchmarks/k6/bench-fusionauth.js`, needs FusionAuth setup (OpenSearch + API key + app ID)
 - [ ] **Stress test** (500+ VUs) — current tests max at 100 VUs. Need to find the breaking point: where does latency spike, what fails first (connection pool, memory, event loop)
 - [ ] **Soak test** (1hr+ sustained load) — find memory leaks, connection pool exhaustion, Redis connection drift, audit buffer growth over time
-- [x] ~~**MongoDB adapter**~~ — Done. `@argus/db-mongodb` built with full `DbAdapter` implementation using native MongoDB driver
+- [x] ~~**MongoDB adapter**~~ — Done. `@argusjs/db-mongodb` built with full `DbAdapter` implementation using native MongoDB driver
 - [ ] **End-to-end browser tests** — Dashboard + client SDK work but have no Playwright/Cypress tests. Cover: login flow, MFA setup, session management, admin user table
 - [ ] **MongoDB integration tests** — need a MongoDB Docker container to run the test suite
 

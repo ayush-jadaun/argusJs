@@ -48,8 +48,8 @@ The server automatically selects dev or production parameters based on `NODE_ENV
 ### Pluggable Alternatives
 
 If Argon2 native compilation is not possible in your environment:
-- `@argus/hash-bcrypt` -- bcrypt with configurable rounds (default: 12)
-- `@argus/hash-scrypt` -- Node.js built-in scrypt (no native dependencies)
+- `@argusjs/hash-bcrypt` -- bcrypt with configurable rounds (default: 12)
+- `@argusjs/hash-scrypt` -- Node.js built-in scrypt (no native dependencies)
 
 ## Token Rotation with Reuse Detection
 
@@ -214,7 +214,7 @@ Retry-After: 42
 
 ## Account Sharing Prevention
 
-The `@argus/security-engine` monitors concurrent active sessions per user:
+The `@argusjs/security-engine` monitors concurrent active sessions per user:
 
 ```typescript
 sharing: {
@@ -327,8 +327,8 @@ This prevents attackers from discovering which email addresses are registered.
 | Use Argon2id for password hashing | Default hasher with 64 MB / 3 iter | Done |
 | Minimum password length 8+ chars | Configurable, default 8 | Done |
 | Maximum password length 128 chars | Configurable, default 128 | Done |
-| Check passwords against breach databases | `@argus/policy-hibp` (HIBP API) | Done |
-| Password strength estimation | `@argus/policy-zxcvbn` | Done |
+| Check passwords against breach databases | `@argusjs/policy-hibp` (HIBP API) | Done |
+| Password strength estimation | `@argusjs/policy-zxcvbn` | Done |
 | Account lockout after failed attempts | Configurable threshold + duration | Done |
 | Rate limit authentication endpoints | Sliding window rate limiter | Done |
 | Secure password reset (time-limited tokens) | 1-hour expiry, single-use, hashed | Done |

@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import type { RateLimiter, RateLimitResult } from '@argus/core';
+import type { RateLimiter, RateLimitResult } from '@argusjs/core';
 
 export interface RedisRateLimiterConfig {
   url?: string;
