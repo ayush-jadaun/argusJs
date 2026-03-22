@@ -474,7 +474,7 @@ jobs:
         run: |
           docker run --rm argusjs:test node -e "console.log('ArgusJS Docker OK')" || true
       - name: Image size
-        run: docker images argusjs:test --format "Image size: {{.Size}}"
+        run: docker images argusjs:test --format 'Image size: ${{ '{{.Size}}' }}'
 
   build-dashboard:
     name: 🎨 Dashboard Build
