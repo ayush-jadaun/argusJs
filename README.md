@@ -6,7 +6,7 @@
 <p align="center">
   <a href="#"><img src="https://img.shields.io/badge/build-passing-brightgreen" alt="Build Status" /></a>
   <a href="#"><img src="https://img.shields.io/badge/tests-308%20passed-brightgreen" alt="Tests" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License" /></a>
   <a href="#"><img src="https://img.shields.io/badge/node-%3E%3D20-green" alt="Node" /></a>
   <a href="#"><img src="https://img.shields.io/badge/typescript-5.7-blue" alt="TypeScript" /></a>
 </p>
