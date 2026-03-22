@@ -65,7 +65,7 @@ services:
     ports:
       - '3100:3100'
     environment:
-      DATABASE_URL: postgres://argus:argus@postgres:5432/argus
+      DATABASE_URL: postgres://argus:argus@postgres:5432/argus  # or MONGO_URL for MongoDB
       REDIS_URL: redis://redis:6379
       PORT: 3100
       HOST: 0.0.0.0
@@ -160,7 +160,7 @@ metadata:
   namespace: argus
 type: Opaque
 stringData:
-  DATABASE_URL: "postgres://argus:password@postgres-service:5432/argus"
+  DATABASE_URL: "postgres://argus:password@postgres-service:5432/argus"  # or use MONGO_URL for MongoDB
   REDIS_URL: "redis://redis-service:6379"
   MFA_ENCRYPTION_KEY: "your-64-char-hex-key-here"
   JWT_PRIVATE_KEY: |
@@ -305,7 +305,8 @@ Memory is important because Argon2 uses 64 MB per concurrent hash. With `UV_THRE
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | -- | PostgreSQL connection string |
+| `DATABASE_URL` | Yes* | -- | PostgreSQL connection string (required if using Postgres adapter) |
+| `MONGO_URL` | Yes* | -- | MongoDB connection string (required if using MongoDB adapter) |
 | `REDIS_URL` | No | -- | Redis connection string (falls back to in-memory cache) |
 | `PORT` | No | `3100` | Server port |
 | `HOST` | No | `0.0.0.0` | Server bind address |
@@ -404,7 +405,7 @@ SIGTERM received
 - [ ] Set `NODE_ENV=production` (enables secure Argon2 defaults)
 - [ ] Provide `JWT_PRIVATE_KEY` (do not auto-generate in production)
 - [ ] Provide `MFA_ENCRYPTION_KEY` (do not auto-generate in production)
-- [ ] Use a dedicated PostgreSQL instance with backups
+- [ ] Use a dedicated PostgreSQL or MongoDB instance with backups
 - [ ] Use a dedicated Redis instance with persistence (RDB or AOF)
 - [ ] Enable TLS at the load balancer / reverse proxy level
 - [ ] Set `CLUSTER_WORKERS` or use Kubernetes replicas for multi-core

@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="#"><img src="https://img.shields.io/badge/build-passing-brightgreen" alt="Build Status" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/tests-282%20passed-brightgreen" alt="Tests" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/tests-308%20passed-brightgreen" alt="Tests" /></a>
   <a href="#"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License" /></a>
   <a href="#"><img src="https://img.shields.io/badge/node-%3E%3D20-green" alt="Node" /></a>
   <a href="#"><img src="https://img.shields.io/badge/typescript-5.7-blue" alt="TypeScript" /></a>
@@ -116,7 +116,7 @@ graph TB
 
     subgraph "Required Adapters"
         direction LR
-        DB["Database<br/><code>postgres</code> | <code>memory</code>"]
+        DB["Database<br/><code>postgres</code> | <code>mongodb</code> | <code>memory</code>"]
         Cache["Cache<br/><code>redis</code> | <code>memory</code>"]
         Hash["Hashing<br/><code>argon2</code> | <code>bcrypt</code> | <code>scrypt</code>"]
         Token["Token Signing<br/><code>rs256</code> | <code>es256</code> | <code>hs256</code>"]
@@ -195,6 +195,7 @@ pnpm add @argus/core @argus/server
 
 # Database (pick one)
 pnpm add @argus/db-postgres      # PostgreSQL via Drizzle ORM
+pnpm add @argus/db-mongodb       # MongoDB via native driver
 pnpm add @argus/db-memory        # In-memory (dev/test only)
 
 # Cache (pick one)
@@ -661,10 +662,10 @@ const argus = new Argus({
 - **Runtime:** Node.js 20+
 - **Language:** TypeScript 5.7
 - **Server:** Fastify 5
-- **Database:** PostgreSQL 16 via Drizzle ORM
+- **Database:** PostgreSQL 16 via Drizzle ORM, MongoDB via native driver
 - **Cache:** Redis 7 via ioredis
 - **Monorepo:** Turborepo with pnpm workspaces
-- **Testing:** Vitest (282 tests: unit, integration, battle, k6)
+- **Testing:** Vitest (308 tests: unit, integration, battle, k6)
 - **Linting:** ESLint 9 with TypeScript rules
 - **Formatting:** Prettier
 - **Containerization:** Docker with multi-stage builds

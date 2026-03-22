@@ -19,9 +19,10 @@ ArgusJS has a comprehensive test suite covering unit tests, integration tests, b
 | `@argus/server` | 55 | Route handlers, middleware, error handling, request validation |
 | `@argus/client` | 8 | Client SDK, React hooks |
 | `@argus/security-engine` | 14 | Brute force, anomaly detection, sharing detection, device trust |
+| `@argus/db-mongodb` | 12 | MongoDB adapter CRUD, atomic operations, connection lifecycle |
 | Integration | 54 | Full auth flows, token rotation, concurrent access, data integrity |
 | Battle tests | 22 | TOCTOU races, token replay, session limit edge cases |
-| **Total** | **296** | |
+| **Total** | **308** | |
 
 ## Running Tests
 

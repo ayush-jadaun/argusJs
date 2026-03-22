@@ -2,7 +2,7 @@
 
 ## System Overview
 
-ArgusJS is organized as a Turborepo monorepo with 32 packages. At the center is `@argus/core`, a pure TypeScript authentication engine with zero framework dependencies. Everything else -- the HTTP server, dashboard, client SDK, and every adapter -- plugs into it through well-defined interfaces.
+ArgusJS is organized as a Turborepo monorepo with 33 packages. At the center is `@argus/core`, a pure TypeScript authentication engine with zero framework dependencies. Everything else -- the HTTP server, dashboard, client SDK, and every adapter -- plugs into it through well-defined interfaces.
 
 ```mermaid
 graph TB
@@ -25,7 +25,7 @@ graph TB
     end
 
     subgraph "Required Adapters"
-        DB["DbAdapter<br/>postgres | memory"]
+        DB["DbAdapter<br/>postgres | mongodb | memory"]
         Cache["CacheAdapter<br/>redis | memory"]
         SessionCache["Session Cache<br/>(Redis, invalidated on revoke)"]
         Hash["PasswordHasher<br/>argon2 | bcrypt | scrypt"]

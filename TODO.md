@@ -5,16 +5,18 @@
 - [ ] Benchmark vs **FusionAuth** — Docker image pulled, benchmark scripts exist at `benchmarks/k6/bench-fusionauth.js`, needs FusionAuth setup (OpenSearch + API key + app ID)
 - [ ] **Stress test** (500+ VUs) — current tests max at 100 VUs. Need to find the breaking point: where does latency spike, what fails first (connection pool, memory, event loop)
 - [ ] **Soak test** (1hr+ sustained load) — find memory leaks, connection pool exhaustion, Redis connection drift, audit buffer growth over time
-- [ ] **MongoDB adapter** — `DbAdapter` interface exists, `@argus/db-mongodb` package was never built. Need Mongoose/native driver implementation + integration tests
+- [x] ~~**MongoDB adapter**~~ — Done. `@argus/db-mongodb` built with full `DbAdapter` implementation using native MongoDB driver
 - [ ] **End-to-end browser tests** — Dashboard + client SDK work but have no Playwright/Cypress tests. Cover: login flow, MFA setup, session management, admin user table
+- [ ] **MongoDB integration tests** — need a MongoDB Docker container to run the test suite
 
 ## Publish Readiness
 
-- [ ] **LICENSE file** — MIT license mentioned in README but `LICENSE` file doesn't exist at repo root
-- [ ] **CHANGELOG.md** — version history, follows Keep a Changelog format
+- [x] ~~**LICENSE file**~~ — Done. Apache 2.0 license at repo root
+- [x] ~~**CHANGELOG.md**~~ — Done. v0.1.0 entry with full feature list
 - [ ] **CONTRIBUTING.md** — how to contribute, PR process, code standards, commit conventions, how to add a new adapter
-- [ ] **npm publish dry run** — verify all 32 packages publish correctly with `npm pack --dry-run`, check exports, types, missing files
-- [ ] **Package READMEs** — each of the 32 packages should have its own README.md with install + usage example (currently only `examples/01-basic-setup/` has one)
+- [ ] **npm publish dry run** — verify all 33 packages publish correctly with `npm pack --dry-run`, check exports, types, missing files
+- [ ] **Package READMEs** — each of the 33 packages should have its own README.md with install + usage example
+- [ ] **bumpcraft integration** — set up bumpcraft for release management once Turborepo monorepo support is ready
 
 ## Performance Optimization (Future)
 
