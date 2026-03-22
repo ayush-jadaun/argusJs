@@ -26,15 +26,10 @@ describe('Argus.refresh', () => {
     const { argus, db } = createTestArgus();
     await argus.init();
     const reg = await setupUser(argus);
-    // Manually expire the token by finding and updating it
-    // We need to get the hash of the refresh token to find it
+    // Expire the token via the test helper (mutates internal state)
     const { hashToken } = await import('../../../utils/crypto.js');
     const hash = hashToken(reg.refreshToken);
-    const token = await db.findRefreshTokenByHash(hash);
-    // Directly mutate for test (set expiresAt to past)
-    if (token) {
-      (token as any).expiresAt = new Date(Date.now() - 1000);
-    }
+    (db as any)._expireRefreshTokenByHash(hash);
     await expect(argus.refresh(reg.refreshToken)).rejects.toThrow();
   });
 
@@ -97,8 +92,7 @@ describe('Argus.refresh', () => {
       const reg = await argus.register({ email: 'expire-norot@test.com', password: 'strongpass123', displayName: 'Exp', ipAddress: '1.2.3.4', userAgent: 'test' });
       const { hashToken } = await import('../../../utils/crypto.js');
       const hash = hashToken(reg.refreshToken);
-      const token = await db.findRefreshTokenByHash(hash);
-      if (token) { (token as any).expiresAt = new Date(Date.now() - 1000); }
+      (db as any)._expireRefreshTokenByHash(hash);
       await expect(argus.refresh(reg.refreshToken)).rejects.toThrow();
     });
   });

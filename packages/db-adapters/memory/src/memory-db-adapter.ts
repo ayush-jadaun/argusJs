@@ -207,7 +207,7 @@ export class MemoryDbAdapter implements DbAdapter {
   async findRefreshTokenByHash(hash: string): Promise<RefreshToken | null> {
     for (const token of this.refreshTokens.values()) {
       if (token.tokenHash === hash) {
-        return { ...token };
+        return { ...token }; // return copy — prevents external mutation of internal state
       }
     }
     return null;
@@ -919,5 +919,15 @@ export class MemoryDbAdapter implements DbAdapter {
       apiKeys: apiKeysList,
       organizations: orgs,
     };
+  }
+
+  // Test helper: expire a refresh token by hash (mutates internal state)
+  _expireRefreshTokenByHash(hash: string): void {
+    for (const token of this.refreshTokens.values()) {
+      if (token.tokenHash === hash) {
+        token.expiresAt = new Date(Date.now() - 1000);
+        return;
+      }
+    }
   }
 }
