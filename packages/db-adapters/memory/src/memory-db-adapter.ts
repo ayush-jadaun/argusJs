@@ -207,7 +207,7 @@ export class MemoryDbAdapter implements DbAdapter {
   async findRefreshTokenByHash(hash: string): Promise<RefreshToken | null> {
     for (const token of this.refreshTokens.values()) {
       if (token.tokenHash === hash) {
-        return token;
+        return { ...token };
       }
     }
     return null;
