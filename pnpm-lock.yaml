@@ -83,18 +83,6 @@ importers:
 
   packages/core:
     devDependencies:
-      '@argus/cache-memory':
-        specifier: workspace:*
-        version: link:../cache-adapters/memory
-      '@argus/db-memory':
-        specifier: workspace:*
-        version: link:../db-adapters/memory
-      '@argus/email-memory':
-        specifier: workspace:*
-        version: link:../email-adapters/memory
-      '@argus/ratelimit-memory':
-        specifier: workspace:*
-        version: link:../rate-limit-adapters/memory
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
