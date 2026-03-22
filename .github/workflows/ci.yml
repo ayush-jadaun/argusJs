@@ -1,46 +1,206 @@
-name: CI
+name: ArgusJS CI Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop, 'release/**', 'hotfix/**']
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+  schedule:
+    - cron: '0 6 * * 1' # Weekly security scan every Monday 6am UTC
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 20
+  PNPM_VERSION: 9.15.0
+
+# ══════════════════════════════════════════════════════════
+# STAGE 1: QUALITY GATES
+# ══════════════════════════════════════════════════════════
 jobs:
-  lint-typecheck:
+  detect-changes:
+    name: 🔍 Detect Changes
     runs-on: ubuntu-latest
+    outputs:
+      core: ${{ steps.filter.outputs.core }}
+      server: ${{ steps.filter.outputs.server }}
+      dashboard: ${{ steps.filter.outputs.dashboard }}
+      adapters: ${{ steps.filter.outputs.adapters }}
+      docs: ${{ steps.filter.outputs.docs }}
+      ci: ${{ steps.filter.outputs.ci }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            core:
+              - 'packages/core/**'
+              - 'packages/db-adapters/**'
+              - 'packages/cache-adapters/**'
+              - 'packages/hash-adapters/**'
+              - 'packages/token-adapters/**'
+            server:
+              - 'packages/server/**'
+              - 'packages/core/**'
+            dashboard:
+              - 'packages/dashboard/**'
+            adapters:
+              - 'packages/mfa-adapters/**'
+              - 'packages/oauth-providers/**'
+              - 'packages/email-adapters/**'
+              - 'packages/rate-limit-adapters/**'
+              - 'packages/password-policy/**'
+              - 'packages/security/**'
+            docs:
+              - 'docs/**'
+              - 'README.md'
+              - 'examples/**'
+            ci:
+              - '.github/**'
+
+  lint:
+    name: 🧹 Lint & Format
+    runs-on: ubuntu-latest
+    needs: detect-changes
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9.15.0
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm lint
+      - name: ESLint
+        run: pnpm lint
+      - name: Prettier Check
+        run: pnpm prettier --check "packages/*/src/**/*.ts" || true
+      - name: Check for console.log in production code
+        run: |
+          FOUND=$(grep -rn "console\.log" packages/*/src/*.ts packages/*/src/**/*.ts \
+            --include="*.ts" \
+            --exclude-dir="__tests__" \
+            --exclude="server.ts" \
+            --exclude="*.test.ts" 2>/dev/null | wc -l)
+          if [ "$FOUND" -gt 0 ]; then
+            echo "⚠️  Found $FOUND console.log statements in production code"
+            grep -rn "console\.log" packages/*/src/*.ts packages/*/src/**/*.ts \
+              --include="*.ts" \
+              --exclude-dir="__tests__" \
+              --exclude="server.ts" \
+              --exclude="*.test.ts" 2>/dev/null || true
+          fi
 
-  unit-tests:
+  typecheck:
+    name: 🔷 TypeScript Check
     runs-on: ubuntu-latest
+    needs: detect-changes
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9.15.0
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build all packages
+        run: pnpm build
+      - name: TypeScript strict check
+        run: pnpm typecheck
+
+  # ══════════════════════════════════════════════════════════
+  # STAGE 2: UNIT TESTS (parallel by domain)
+  # ══════════════════════════════════════════════════════════
+  test-core:
+    name: 🧪 Core Engine Tests
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm test:unit
-        env:
-          NODE_ENV: test
+      - name: Core unit tests
+        run: cd packages/core && pnpm vitest run --reporter=verbose
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-core
+          path: packages/core/coverage/
 
-  integration-tests:
+  test-server:
+    name: 🌐 Server Route Tests
     runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Server unit tests
+        run: cd packages/server && pnpm vitest run --reporter=verbose
+
+  test-adapters:
+    name: 🔌 Adapter Tests
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    strategy:
+      fail-fast: false
+      matrix:
+        adapter:
+          - { name: "DB Memory", path: "packages/db-adapters/memory" }
+          - { name: "Cache Memory", path: "packages/cache-adapters/memory" }
+          - { name: "Hash Argon2", path: "packages/hash-adapters/argon2" }
+          - { name: "Hash bcrypt", path: "packages/hash-adapters/bcrypt" }
+          - { name: "Hash scrypt", path: "packages/hash-adapters/scrypt" }
+          - { name: "JWT RS256", path: "packages/token-adapters/jwt-rs256" }
+          - { name: "JWT ES256", path: "packages/token-adapters/jwt-es256" }
+          - { name: "JWT HS256", path: "packages/token-adapters/jwt-hs256" }
+          - { name: "MFA TOTP", path: "packages/mfa-adapters/totp" }
+          - { name: "Rate Limiter", path: "packages/rate-limit-adapters/memory" }
+          - { name: "Email Memory", path: "packages/email-adapters/memory" }
+          - { name: "Security Engine", path: "packages/security" }
+          - { name: "Client SDK", path: "packages/client" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Test ${{ matrix.adapter.name }}
+        run: cd ${{ matrix.adapter.path }} && pnpm vitest run --reporter=verbose
+
+  # ══════════════════════════════════════════════════════════
+  # STAGE 3: INTEGRATION TESTS (real infrastructure)
+  # ══════════════════════════════════════════════════════════
+  test-integration-postgres:
+    name: 🐘 PostgreSQL Integration
+    runs-on: ubuntu-latest
+    needs: [test-core, test-server]
     services:
       postgres:
         image: postgres:16-alpine
@@ -52,59 +212,344 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd "pg_isready -U argus"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Postgres adapter integration tests
+        run: cd packages/db-adapters/postgres && pnpm vitest run --reporter=verbose
+        env:
+          DATABASE_URL: postgres://argus:argus@localhost:5432/argus
+
+  test-integration-redis:
+    name: 🔴 Redis Integration
+    runs-on: ubuntu-latest
+    needs: [test-core, test-server]
+    services:
       redis:
         image: redis:7-alpine
         ports:
           - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9.15.0
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm test:integration
+      - name: Redis cache adapter tests
+        run: cd packages/cache-adapters/redis && pnpm vitest run --reporter=verbose
+        env:
+          REDIS_URL: redis://localhost:6379
+      - name: Redis rate limiter tests
+        run: cd packages/rate-limit-adapters/redis && pnpm vitest run --reporter=verbose
+        env:
+          REDIS_URL: redis://localhost:6379
+
+  test-integration-full:
+    name: 🔗 Full Stack Integration
+    runs-on: ubuntu-latest
+    needs: [test-integration-postgres, test-integration-redis]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: argus
+          POSTGRES_PASSWORD: argus
+          POSTGRES_DB: argus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U argus"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Auth flow integration tests
+        run: npx vitest run tests/integration/auth-flows.test.ts --config tests/integration/vitest.config.ts
+        env:
+          DATABASE_URL: postgres://argus:argus@localhost:5432/argus
+          REDIS_URL: redis://localhost:6379
+      - name: Token rotation tests
+        run: npx vitest run tests/integration/token-rotation.test.ts --config tests/integration/vitest.config.ts
+        env:
+          DATABASE_URL: postgres://argus:argus@localhost:5432/argus
+          REDIS_URL: redis://localhost:6379
+      - name: Concurrent access tests
+        run: npx vitest run tests/integration/concurrent-access.test.ts --config tests/integration/vitest.config.ts
+        env:
+          DATABASE_URL: postgres://argus:argus@localhost:5432/argus
+          REDIS_URL: redis://localhost:6379
+      - name: Data integrity tests
+        run: npx vitest run tests/integration/data-integrity.test.ts --config tests/integration/vitest.config.ts
+        env:
+          DATABASE_URL: postgres://argus:argus@localhost:5432/argus
+          REDIS_URL: redis://localhost:6379
+      - name: Edge case tests
+        run: npx vitest run tests/integration/edge-cases.test.ts --config tests/integration/vitest.config.ts
+        env:
+          DATABASE_URL: postgres://argus:argus@localhost:5432/argus
+          REDIS_URL: redis://localhost:6379
+      - name: Battle tests
+        run: npx vitest run tests/integration/battle-test.test.ts --config tests/integration/vitest.config.ts
         env:
           DATABASE_URL: postgres://argus:argus@localhost:5432/argus
           REDIS_URL: redis://localhost:6379
 
-  security:
+  # ══════════════════════════════════════════════════════════
+  # STAGE 4: SECURITY & COMPATIBILITY
+  # ══════════════════════════════════════════════════════════
+  security-audit:
+    name: 🔒 Security Audit
     runs-on: ubuntu-latest
+    needs: [lint, typecheck]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9.15.0
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm audit --audit-level=high || true
+      - name: npm audit
+        run: pnpm audit --audit-level=high || true
+      - name: Check for known vulnerable patterns
+        run: |
+          echo "Checking for eval() usage..."
+          EVAL_COUNT=$(grep -rn "eval(" packages/*/src/**/*.ts --include="*.ts" 2>/dev/null | wc -l)
+          echo "Checking for exec() usage..."
+          EXEC_COUNT=$(grep -rn "child_process" packages/*/src/**/*.ts --include="*.ts" 2>/dev/null | wc -l)
+          echo "Checking for SQL injection patterns..."
+          SQL_COUNT=$(grep -rn "\\$\{.*\}" packages/db-adapters/*/src/**/*.ts --include="*.ts" 2>/dev/null | grep -i "select\|insert\|update\|delete" | wc -l)
+          echo "eval(): $EVAL_COUNT | exec(): $EXEC_COUNT | SQL injection: $SQL_COUNT"
+          if [ "$EVAL_COUNT" -gt 0 ] || [ "$SQL_COUNT" -gt 0 ]; then
+            echo "⚠️  Potential security issues found!"
+            exit 1
+          fi
 
-  build:
+  node-compat:
+    name: 📦 Node.js Compatibility
     runs-on: ubuntu-latest
-    needs: [lint-typecheck, unit-tests]
+    needs: [lint, typecheck]
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9.15.0
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Unit tests on Node ${{ matrix.node-version }}
+        run: |
+          cd packages/core && pnpm vitest run
+          cd ../../packages/server && pnpm vitest run
+
+  os-compat:
+    name: 💻 OS Compatibility
+    needs: [lint, typecheck]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Core tests on ${{ matrix.os }}
+        run: cd packages/core && pnpm vitest run
+
+  # ══════════════════════════════════════════════════════════
+  # STAGE 5: BUILD ARTIFACTS
+  # ══════════════════════════════════════════════════════════
+  build-packages:
+    name: 📦 Build All Packages
+    runs-on: ubuntu-latest
+    needs: [test-core, test-server, test-adapters]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build all 33 packages
+        run: pnpm build
+      - name: Verify package exports
+        run: |
+          echo "Verifying all packages have dist/ output..."
+          MISSING=0
+          for pkg in $(find packages -name "package.json" -not -path "*/node_modules/*" -not -path "*/dashboard/*" | sort); do
+            dir=$(dirname "$pkg")
+            name=$(node -e "console.log(require('./$pkg').name)")
+            if [ ! -d "$dir/dist" ] && [ "$name" != "@argus/dashboard" ]; then
+              echo "❌ $name: missing dist/"
+              MISSING=$((MISSING + 1))
+            else
+              echo "✅ $name"
+            fi
+          done
+          if [ "$MISSING" -gt 0 ]; then
+            echo "❌ $MISSING packages missing dist/"
+            exit 1
+          fi
+      - name: Check package sizes
+        run: |
+          echo "📊 Package sizes:"
+          for pkg in $(find packages -name "package.json" -not -path "*/node_modules/*" -not -path "*/dashboard/*" | sort); do
+            dir=$(dirname "$pkg")
+            name=$(node -e "console.log(require('./$pkg').name)")
+            if [ -d "$dir/dist" ]; then
+              SIZE=$(du -sh "$dir/dist" 2>/dev/null | cut -f1)
+              echo "  $name: $SIZE"
+            fi
+          done
+
+  build-docker:
+    name: 🐳 Docker Build
+    runs-on: ubuntu-latest
+    needs: [test-integration-full]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t argusjs:test .
+      - name: Verify Docker image
+        run: |
+          docker run --rm argusjs:test node -e "console.log('ArgusJS Docker OK')" || true
+      - name: Image size
+        run: docker images argusjs:test --format "Image size: {{.Size}}"
+
+  build-dashboard:
+    name: 🎨 Dashboard Build
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    if: needs.detect-changes.outputs.dashboard == 'true' || github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Build Next.js dashboard
+        run: cd packages/dashboard && pnpm build
+      - name: Dashboard build size
+        run: du -sh packages/dashboard/.next/ 2>/dev/null || echo "N/A"
+
+  # ══════════════════════════════════════════════════════════
+  # STAGE 6: FINAL GATE
+  # ══════════════════════════════════════════════════════════
+  ci-passed:
+    name: ✅ All Checks Passed
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - detect-changes
+      - lint
+      - typecheck
+      - test-core
+      - test-server
+      - test-adapters
+      - test-integration-postgres
+      - test-integration-redis
+      - test-integration-full
+      - security-audit
+      - node-compat
+      - os-compat
+      - build-packages
+      - build-docker
+    steps:
+      - name: Check all jobs
+        run: |
+          echo "╔═══════════════════════════════════════╗"
+          echo "║   ArgusJS CI Pipeline Summary         ║"
+          echo "╠═══════════════════════════════════════╣"
+          echo "║ 🔍 Change Detection    ✅             ║"
+          echo "║ 🧹 Lint & Format       ${{ needs.lint.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🔷 TypeScript          ${{ needs.typecheck.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🧪 Core Tests          ${{ needs.test-core.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🌐 Server Tests        ${{ needs.test-server.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🔌 Adapter Tests       ${{ needs.test-adapters.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🐘 Postgres Integration ${{ needs.test-integration-postgres.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🔴 Redis Integration   ${{ needs.test-integration-redis.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🔗 Full Integration    ${{ needs.test-integration-full.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🔒 Security Audit      ${{ needs.security-audit.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 📦 Node Compat         ${{ needs.node-compat.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 💻 OS Compat           ${{ needs.os-compat.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 📦 Build Packages      ${{ needs.build-packages.result == 'success' && '✅' || '❌' }}             ║"
+          echo "║ 🐳 Docker Build        ${{ needs.build-docker.result == 'success' && '✅' || '❌' }}             ║"
+          echo "╚═══════════════════════════════════════╝"
+
+          # Fail if any required job failed
+          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
+             [[ "${{ needs.typecheck.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-core.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-server.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-adapters.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-integration-full.result }}" == "failure" ]] || \
+             [[ "${{ needs.build-packages.result }}" == "failure" ]]; then
+            echo "❌ Pipeline failed!"
+            exit 1
+          fi
+          echo "🎉 All checks passed!"

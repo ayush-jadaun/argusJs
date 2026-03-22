@@ -14,6 +14,8 @@ import type {
 export interface MongoDbAdapterConfig {
   url: string;
   dbName?: string;
+  connectTimeoutMS?: number;
+  serverSelectionTimeoutMS?: number;
 }
 
 /**
@@ -69,7 +71,10 @@ export class MongoDbAdapter implements DbAdapter {
   private trustedDevices!: Collection<BaseDoc>;
 
   constructor(config: MongoDbAdapterConfig) {
-    this.client = new MongoClient(config.url);
+    this.client = new MongoClient(config.url, {
+      connectTimeoutMS: config.connectTimeoutMS ?? 10000,
+      serverSelectionTimeoutMS: config.serverSelectionTimeoutMS ?? 10000,
+    });
     this.dbName = config.dbName ?? 'argus';
   }
 

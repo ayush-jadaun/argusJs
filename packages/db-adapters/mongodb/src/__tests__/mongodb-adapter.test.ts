@@ -10,13 +10,13 @@ describe('MongoDbAdapter', () => {
 
   beforeAll(async () => {
     try {
-      db = new MongoDbAdapter({ url: MONGO_URL, dbName: DB_NAME });
+      db = new MongoDbAdapter({ url: MONGO_URL, dbName: DB_NAME, connectTimeoutMS: 3000, serverSelectionTimeoutMS: 3000 });
       await db.init();
       connected = true;
-    } catch {
+    } catch (_err) {
       console.warn('MongoDB not available, skipping integration tests');
     }
-  });
+  }, 10000);
 
   afterAll(async () => {
     if (connected) {
