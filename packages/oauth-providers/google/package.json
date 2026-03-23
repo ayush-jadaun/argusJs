@@ -2,12 +2,31 @@
   "name": "@argusjs/oauth-google",
   "version": "0.1.1",
   "license": "Apache-2.0",
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
-  "scripts": { "build": "tsc", "test": "vitest run", "test:unit": "vitest run", "typecheck": "tsc --noEmit", "clean": "rm -rf dist" },
-  "dependencies": { "@argusjs/core": "workspace:*" },
-  "devDependencies": { "typescript": "^5.7.0", "vitest": "^3.2.0" }
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@argusjs/core": "^0.1.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
+  }
 }

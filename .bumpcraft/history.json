@@ -1,5 +1,40 @@
 [
   {
+    "version": "core@0.1.2",
+    "previousVersion": "core@0.1.1",
+    "date": "2026-03-23T20:56:03.361Z",
+    "commits": [
+      {
+        "hash": "e3244121f2135e3ce26141111e309c20ce30fb1c",
+        "type": "fix",
+        "scope": "core",
+        "subject": "update bumpcraft to 1.5.4 (default plugins fix)",
+        "body": null,
+        "breaking": false,
+        "raw": "e3244121f2135e3ce26141111e309c20ce30fb1c fix(core): update bumpcraft to 1.5.4 (default plugins fix)"
+      },
+      {
+        "hash": "250b7b0e8a56639a8cfd06f769e21085dc39e64a",
+        "type": "fix",
+        "scope": "core",
+        "subject": "update bumpcraft to 1.5.2, use pnpm-workspace.yaml auto-detect",
+        "body": null,
+        "breaking": false,
+        "raw": "250b7b0e8a56639a8cfd06f769e21085dc39e64a fix(core): update bumpcraft to 1.5.2, use pnpm-workspace.yaml auto-detect"
+      },
+      {
+        "hash": "b4dd48dfcf0b16bc5495b1d618c19258f1e9ba84",
+        "type": "fix",
+        "scope": "core",
+        "subject": "update bumpcraft to 1.5.1 (monorepo validate fix)",
+        "body": null,
+        "breaking": false,
+        "raw": "b4dd48dfcf0b16bc5495b1d618c19258f1e9ba84 fix(core): update bumpcraft to 1.5.1 (monorepo validate fix)"
+      }
+    ],
+    "changelogOutput": "## [0.1.2]() (2026-03-23)\n\n### 🐛 Bug Fixes\n\n- **core:** update bumpcraft to 1.5.4 (default plugins fix) (e324412)\n- **core:** update bumpcraft to 1.5.2, use pnpm-workspace.yaml auto-detect (250b7b0)\n- **core:** update bumpcraft to 1.5.1 (monorepo validate fix) (b4dd48d)\n"
+  },
+  {
     "version": "0.2.0",
     "previousVersion": "0.1.1",
     "date": "2026-03-23T19:50:49.400Z",

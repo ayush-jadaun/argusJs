@@ -2,13 +2,22 @@
   "name": "@argusjs/client",
   "version": "0.1.1",
   "license": "Apache-2.0",
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
-    "./react": { "import": "./dist/react/index.js", "types": "./dist/react/index.d.ts" }
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react/index.js",
+      "types": "./dist/react/index.d.ts"
+    }
   },
   "scripts": {
     "build": "tsc",
@@ -18,13 +27,15 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@argusjs/core": "workspace:*"
+    "@argusjs/core": "^0.1.2"
   },
   "peerDependencies": {
     "react": ">=18.0.0"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": true }
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "typescript": "^5.7.0",

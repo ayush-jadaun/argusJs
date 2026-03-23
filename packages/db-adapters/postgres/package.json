@@ -2,11 +2,19 @@
   "name": "@argusjs/db-postgres",
   "version": "0.1.1",
   "license": "Apache-2.0",
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
@@ -18,7 +26,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@argusjs/core": "workspace:*",
+    "@argusjs/core": "^0.1.2",
     "drizzle-orm": "^0.44.0",
     "postgres": "^3.4.0"
   },
