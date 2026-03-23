@@ -8,6 +8,11 @@ on:
   schedule:
     - cron: '0 6 * * 1' # Weekly security scan every Monday 6am UTC
 
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
