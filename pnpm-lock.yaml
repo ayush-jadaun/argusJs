@@ -15,8 +15,8 @@ importers:
         specifier: ^22.0.0
         version: 22.19.15
       bumpcraft:
-        specifier: ^1.5.2
-        version: 1.5.2
+        specifier: ^1.5.4
+        version: 1.5.4
       eslint:
         specifier: ^9.0.0
         version: 9.39.4(jiti@2.6.1)
@@ -2283,8 +2283,8 @@ packages:
   buffer@6.0.3:
     resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
 
-  bumpcraft@1.5.2:
-    resolution: {integrity: sha512-huYLMlve1g5eYWWxuUQD8YOZ+DDyLDMoqsPBZkxqlgemcK3pvI58G1MIf4g2fjRGZxr9aqJ7Vwx3L/Te47kvfw==}
+  bumpcraft@1.5.4:
+    resolution: {integrity: sha512-WsI97/MsvzyccHKILKbBhK4Vas29qcOo/Rg+ccep4L1RL57uRuVB97+kGCweNBcu50EF732XXAR+BnclERs63w==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -5782,7 +5782,7 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bumpcraft@1.5.2:
+  bumpcraft@1.5.4:
     dependencies:
       commander: 14.0.3
       express: 5.2.1
