@@ -351,4 +351,34 @@ export async function adminRoutes(app: FastifyInstance): Promise<void> {
 
     return reply.status(204).send();
   });
+
+  app.get('/v1/admin/webhooks', async (request: FastifyRequest, reply: FastifyReply) => {
+    const webhooks = await request.server.argus.webhooks.list();
+    return reply.status(200).send({ webhooks });
+  });
+
+  app.post('/v1/admin/webhooks', async (request: FastifyRequest, reply: FastifyReply) => {
+    const body = request.body as { url: string; events: string[]; orgId?: string };
+    const webhook = await request.server.argus.webhooks.create(body);
+    return reply.status(201).send({ webhook });
+  });
+
+  app.patch('/v1/admin/webhooks/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const body = request.body as Record<string, unknown>;
+    const webhook = await request.server.argus.webhooks.update(id, body);
+    return reply.status(200).send({ webhook });
+  });
+
+  app.delete('/v1/admin/webhooks/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    await request.server.argus.webhooks.delete(id);
+    return reply.status(204).send();
+  });
+
+  app.post('/v1/admin/webhooks/:id/test', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    await request.server.argus.webhooks.test(id);
+    return reply.status(200).send({ message: 'Test webhook dispatched' });
+  });
 }

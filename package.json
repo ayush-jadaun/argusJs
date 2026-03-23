@@ -12,7 +12,9 @@
     "clean": "turbo run clean",
     "start": "node packages/server/dist/server.js",
     "start:cluster": "node packages/server/dist/cluster.js",
-    "start:dev": "NODE_ENV=development node packages/server/dist/server.js"
+    "start:dev": "NODE_ENV=development node packages/server/dist/server.js",
+    "users:import": "npx tsx scripts/import-users.ts",
+    "users:export": "npx tsx scripts/export-users.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

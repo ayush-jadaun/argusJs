@@ -50,6 +50,17 @@ export const api = {
   // Stats
   getStats: () => apiRequest<any>('/v1/admin/stats'),
 
+  // Webhooks
+  getWebhooks: () => apiRequest<any>('/v1/admin/webhooks'),
+  createWebhook: (data: { url: string; events: string[] }) =>
+    apiRequest<any>('/v1/admin/webhooks', { method: 'POST', body: JSON.stringify(data) }),
+  updateWebhook: (id: string, data: any) =>
+    apiRequest<any>(`/v1/admin/webhooks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteWebhook: (id: string) =>
+    apiRequest<void>(`/v1/admin/webhooks/${id}`, { method: 'DELETE' }),
+  testWebhook: (id: string) =>
+    apiRequest<any>(`/v1/admin/webhooks/${id}/test`, { method: 'POST' }),
+
   // Health
   getHealth: () => apiRequest<any>('/v1/health'),
 };

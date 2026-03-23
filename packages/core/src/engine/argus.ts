@@ -62,6 +62,8 @@ export class Argus {
   public readonly roles: RoleNamespace;
   public readonly apiKeys: ApiKeyNamespace;
   public readonly webhooks: WebhookNamespace;
+  public readonly passkey: PasskeyNamespace;
+  public readonly magicLink: MagicLinkNamespace;
 
   constructor(config: ArgusConfig) {
     this.db = config.db;
@@ -93,6 +95,8 @@ export class Argus {
     this.roles = this.createRoleNamespace();
     this.apiKeys = this.createApiKeyNamespace();
     this.webhooks = this.createWebhookNamespace();
+    this.passkey = this.createPasskeyNamespace();
+    this.magicLink = this.createMagicLinkNamespace();
   }
 
   async init(): Promise<void> {
@@ -2100,6 +2104,160 @@ export class Argus {
       },
     };
   }
+
+  // ─── Passkey Namespace (Passwordless WebAuthn) ─────────────────────
+
+  private createPasskeyNamespace(): PasskeyNamespace {
+    return {
+      registerStart: async (userId: string): Promise<PublicKeyCredentialCreationOptionsJSON> => {
+        const user = await this.db.findUserById(userId);
+        if (!user) throw Errors.notFound('User');
+        const challenge = generateToken(32);
+        await this.cache.set(`passkey:reg:${userId}`, JSON.stringify({ challenge }), 300);
+        return {
+          challenge,
+          rp: { name: this.issuer, id: this.config.passkey?.rpId ?? 'localhost' },
+          user: { id: Buffer.from(userId).toString('base64url'), name: user.email, displayName: user.displayName },
+          pubKeyCredParams: [{ alg: -7, type: 'public-key' }, { alg: -257, type: 'public-key' }],
+          timeout: 300000,
+          authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'required', requireResidentKey: true, userVerification: 'required' },
+          attestation: 'none',
+        };
+      },
+
+      registerFinish: async (userId: string, credential: PasskeyCredential): Promise<void> => {
+        const user = await this.db.findUserById(userId);
+        if (!user) throw Errors.notFound('User');
+        const cached = await this.cache.get(`passkey:reg:${userId}`);
+        if (!cached) throw Errors.invalidToken();
+        await this.cache.del(`passkey:reg:${userId}`);
+        const existingRaw = await this.cache.get(`passkey:creds:${userId}`);
+        const existing: PasskeyCredential[] = existingRaw ? JSON.parse(existingRaw) : [];
+        existing.push({ credentialId: credential.credentialId, publicKey: credential.publicKey, counter: credential.counter ?? 0, transports: credential.transports });
+        await this.cache.set(`passkey:creds:${userId}`, JSON.stringify(existing), 315360000);
+        await this.cache.set(`passkey:id:${credential.credentialId}`, userId, 315360000);
+        if (this.config.audit?.enabled) { this.writeAudit('MFA_ENABLED', userId, null, null, { method: 'passkey' }); }
+        await this.flushAuditLog();
+        await this.emitter.emit('passkey.registered', { userId, credentialId: credential.credentialId, timestamp: new Date() });
+      },
+
+      loginStart: async (email: string): Promise<PublicKeyCredentialRequestOptionsJSON> => {
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await this.db.findUserByEmail(normalizedEmail);
+        if (!user) throw Errors.invalidCredentials();
+        const credsRaw = await this.cache.get(`passkey:creds:${user.id}`);
+        const creds: PasskeyCredential[] = credsRaw ? JSON.parse(credsRaw) : [];
+        if (creds.length === 0) throw Errors.invalidCredentials();
+        const challenge = generateToken(32);
+        await this.cache.set(`passkey:login:${normalizedEmail}`, JSON.stringify({ challenge, userId: user.id }), 300);
+        return {
+          challenge, timeout: 300000, rpId: this.config.passkey?.rpId ?? 'localhost',
+          allowCredentials: creds.map(c => ({ id: c.credentialId, type: 'public-key' as const, transports: c.transports })),
+          userVerification: 'required',
+        };
+      },
+
+      loginFinish: async (email: string, assertion: PasskeyAssertion, context: LoginContext): Promise<AuthResponse> => {
+        const normalizedEmail = email.trim().toLowerCase();
+        const cached = await this.cache.get(`passkey:login:${normalizedEmail}`);
+        if (!cached) throw Errors.invalidCredentials();
+        const { userId } = JSON.parse(cached) as { challenge: string; userId: string };
+        await this.cache.del(`passkey:login:${normalizedEmail}`);
+        const user = await this.db.findUserById(userId);
+        if (!user) throw Errors.invalidCredentials();
+        if (user.lockedUntil && user.lockedUntil > new Date()) throw Errors.accountLocked(user.lockedUntil);
+        const credsRaw = await this.cache.get(`passkey:creds:${userId}`);
+        const creds: PasskeyCredential[] = credsRaw ? JSON.parse(credsRaw) : [];
+        const matchedCred = creds.find(c => c.credentialId === assertion.credentialId);
+        if (!matchedCred) throw Errors.invalidCredentials();
+        if (assertion.counter !== undefined && assertion.counter > matchedCred.counter) {
+          matchedCred.counter = assertion.counter;
+          await this.cache.set(`passkey:creds:${userId}`, JSON.stringify(creds), 315360000);
+        }
+        const sessionTimeout = this.config.session?.absoluteTimeout ?? 2592000;
+        const session = await this.db.createSession({ userId: user.id, ipAddress: context.ipAddress, userAgent: context.userAgent, deviceFingerprint: context.deviceFingerprint, expiresAt: new Date(Date.now() + sessionTimeout * 1000) });
+        this.cacheSession(session).catch(() => {});
+        const accessTokenClaims: AccessTokenClaims = { iss: this.issuer, sub: user.id, aud: this.audience, exp: Math.floor(Date.now() / 1000) + 900, iat: Math.floor(Date.now() / 1000), jti: generateUUID(), email: user.email, emailVerified: user.emailVerified, roles: user.roles, permissions: user.permissions, sessionId: session.id };
+        const accessToken = await this.token.signAccessToken(accessTokenClaims);
+        const refreshTokenRaw = generateToken(48);
+        const refreshTokenHash = hashToken(refreshTokenRaw);
+        const family = generateUUID();
+        await this.db.createRefreshToken({ userId: user.id, sessionId: session.id, tokenHash: refreshTokenHash, family, generation: 0, expiresAt: new Date(Date.now() + sessionTimeout * 1000) });
+        await this.db.updateUser(user.id, { lastLoginAt: new Date(), lastLoginIp: context.ipAddress, failedLoginAttempts: 0 });
+        this.invalidateUserCache(user.id).catch(() => {});
+        if (this.config.audit?.enabled) { this.writeAudit('LOGIN_SUCCESS', user.id, context.ipAddress, context.userAgent, { method: 'passkey' }); }
+        await this.flushAuditLog();
+        await this.emitter.emit('user.login', { userId: user.id, sessionId: session.id, ipAddress: context.ipAddress, method: 'passkey', timestamp: new Date() });
+        return this.buildAuthResponse(user, accessToken, refreshTokenRaw, 900);
+      },
+    };
+  }
+
+  // ─── Magic Link Namespace ──────────────────────────────────────────
+
+  private createMagicLinkNamespace(): MagicLinkNamespace {
+    return {
+      sendLink: async (email: string, ipAddress: string): Promise<void> => {
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await this.db.findUserByEmail(normalizedEmail);
+        if (!user) return;
+        await this.cache.del(`magiclink:user:${user.id}`);
+        const magicToken = generateToken(32);
+        const magicTokenHash = hashToken(magicToken);
+        await this.cache.set(`magiclink:${magicTokenHash}`, JSON.stringify({ userId: user.id, email: normalizedEmail, createdAt: Date.now() }), 900);
+        await this.cache.set(`magiclink:user:${user.id}`, magicTokenHash, 900);
+        if (this.email) {
+          await this.email.sendSecurityAlertEmail(user.email, { type: 'magic_link', description: `Your magic link login token: ${magicToken}`, ipAddress, timestamp: new Date() }, user);
+        }
+        if (this.config.audit?.enabled) { this.writeAudit('LOGIN_SUCCESS', user.id, ipAddress, null, { method: 'magic_link_sent' }); }
+        await this.flushAuditLog();
+        await this.emitter.emit('magiclink.sent', { userId: user.id, email: normalizedEmail, timestamp: new Date() });
+      },
+
+      verifyLink: async (token: string, context: LoginContext): Promise<AuthResponse> => {
+        const tokenHash = hashToken(token);
+        const cached = await this.cache.get(`magiclink:${tokenHash}`);
+        if (!cached) throw Errors.invalidToken();
+        const { userId } = JSON.parse(cached) as { userId: string; email: string; createdAt: number };
+        await this.cache.del(`magiclink:${tokenHash}`);
+        await this.cache.del(`magiclink:user:${userId}`);
+        const user = await this.db.findUserById(userId);
+        if (!user) throw Errors.invalidToken();
+        if (user.lockedUntil && user.lockedUntil > new Date()) throw Errors.accountLocked(user.lockedUntil);
+        if (!user.emailVerified) { await this.db.updateUser(userId, { emailVerified: true, emailVerifiedAt: new Date() }); }
+        const sessionTimeout = this.config.session?.absoluteTimeout ?? 2592000;
+        const session = await this.db.createSession({ userId: user.id, ipAddress: context.ipAddress, userAgent: context.userAgent, deviceFingerprint: context.deviceFingerprint, expiresAt: new Date(Date.now() + sessionTimeout * 1000) });
+        this.cacheSession(session).catch(() => {});
+        const accessTokenClaims: AccessTokenClaims = { iss: this.issuer, sub: user.id, aud: this.audience, exp: Math.floor(Date.now() / 1000) + 900, iat: Math.floor(Date.now() / 1000), jti: generateUUID(), email: user.email, emailVerified: true, roles: user.roles, permissions: user.permissions, sessionId: session.id };
+        const accessToken = await this.token.signAccessToken(accessTokenClaims);
+        const refreshTokenRaw = generateToken(48);
+        const refreshTokenHash = hashToken(refreshTokenRaw);
+        const family = generateUUID();
+        await this.db.createRefreshToken({ userId: user.id, sessionId: session.id, tokenHash: refreshTokenHash, family, generation: 0, expiresAt: new Date(Date.now() + sessionTimeout * 1000) });
+        await this.db.updateUser(user.id, { lastLoginAt: new Date(), lastLoginIp: context.ipAddress, failedLoginAttempts: 0 });
+        this.invalidateUserCache(user.id).catch(() => {});
+        if (this.config.audit?.enabled) { this.writeAudit('LOGIN_SUCCESS', user.id, context.ipAddress, context.userAgent, { method: 'magic_link' }); }
+        await this.flushAuditLog();
+        await this.emitter.emit('user.login', { userId: user.id, sessionId: session.id, ipAddress: context.ipAddress, method: 'magic_link', timestamp: new Date() });
+        const updatedUser = await this.db.findUserById(userId);
+        return this.buildAuthResponse(updatedUser ?? user, accessToken, refreshTokenRaw, 900);
+      },
+    };
+  }
+
+  // ─── Session TLS Binding ──────────────────────────────────────────
+
+  async bindSessionToTLS(sessionId: string, tlsFingerprint: string): Promise<void> {
+    await this.cache.set(`session:tls:${sessionId}`, tlsFingerprint, this.config.session?.absoluteTimeout ?? 2592000);
+  }
+
+  async verifySessionTLS(sessionId: string, tlsFingerprint: string | null): Promise<boolean> {
+    if (!this.config.session?.bindToTLSFingerprint) return true;
+    if (!tlsFingerprint) return false;
+    const stored = await this.cache.get(`session:tls:${sessionId}`);
+    if (!stored) return true;
+    return stored === tlsFingerprint;
+  }
 }
 
 // ─── Namespace Types ──────────────────────────────────────────────────
@@ -2155,4 +2313,49 @@ export interface WebhookNamespace {
   update(id: string, updates: Partial<Webhook>): Promise<Webhook>;
   delete(id: string): Promise<void>;
   test(id: string): Promise<void>;
+}
+
+export interface PasskeyCredential {
+  credentialId: string;
+  publicKey: string;
+  counter: number;
+  transports?: string[];
+}
+
+export interface PasskeyAssertion {
+  credentialId: string;
+  authenticatorData?: string;
+  clientDataJSON?: string;
+  signature?: string;
+  counter?: number;
+}
+
+export interface PublicKeyCredentialCreationOptionsJSON {
+  challenge: string;
+  rp: { name: string; id: string };
+  user: { id: string; name: string; displayName: string };
+  pubKeyCredParams: Array<{ alg: number; type: string }>;
+  timeout: number;
+  authenticatorSelection: { authenticatorAttachment: string; residentKey: string; requireResidentKey: boolean; userVerification: string };
+  attestation: string;
+}
+
+export interface PublicKeyCredentialRequestOptionsJSON {
+  challenge: string;
+  timeout: number;
+  rpId: string;
+  allowCredentials: Array<{ id: string; type: string; transports?: string[] }>;
+  userVerification: string;
+}
+
+export interface PasskeyNamespace {
+  registerStart(userId: string): Promise<PublicKeyCredentialCreationOptionsJSON>;
+  registerFinish(userId: string, credential: PasskeyCredential): Promise<void>;
+  loginStart(email: string): Promise<PublicKeyCredentialRequestOptionsJSON>;
+  loginFinish(email: string, assertion: PasskeyAssertion, context: LoginContext): Promise<AuthResponse>;
+}
+
+export interface MagicLinkNamespace {
+  sendLink(email: string, ipAddress: string): Promise<void>;
+  verifyLink(token: string, context: LoginContext): Promise<AuthResponse>;
 }

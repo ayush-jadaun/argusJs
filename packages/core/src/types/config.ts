@@ -42,6 +42,12 @@ export interface ArgusConfig {
     rotateRefreshTokens?: boolean;   // default true — rotate on every refresh (secure). Set false for Keycloak-style reuse (faster).
     cacheRefreshTokens?: boolean;    // default false — when true, cache refresh token lookups in Redis (faster, but reuse detection has a TTL delay window).
     refreshTokenCacheTTL?: number;   // seconds, default 30 — only used when cacheRefreshTokens is true. Shorter = more secure, longer = faster.
+    bindToTLSFingerprint?: boolean;  // bind session to client TLS certificate fingerprint (mTLS)
+  };
+
+  passkey?: {
+    rpId?: string;
+    rpName?: string;
   };
 
   lockout?: {
