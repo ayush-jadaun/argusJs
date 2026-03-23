@@ -416,6 +416,19 @@ importers:
         specifier: ^3.2.0
         version: 3.2.4(@types/node@22.19.15)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)
 
+  packages/oauth-providers/saml:
+    dependencies:
+      '@argusjs/core':
+        specifier: workspace:*
+        version: link:../../core
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.0
+        version: 3.2.4(@types/node@22.19.15)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)
+
   packages/password-policy/hibp:
     dependencies:
       '@argusjs/core':
@@ -516,6 +529,12 @@ importers:
       '@argusjs/ratelimit-redis':
         specifier: workspace:*
         version: link:../rate-limit-adapters/redis
+      '@argusjs/token-jwt-es256':
+        specifier: workspace:*
+        version: link:../token-adapters/jwt-es256
+      '@argusjs/token-jwt-hs256':
+        specifier: workspace:*
+        version: link:../token-adapters/jwt-hs256
       '@argusjs/token-jwt-rs256':
         specifier: workspace:*
         version: link:../token-adapters/jwt-rs256

@@ -1,6 +1,36 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { requireAuth } from '../middleware/auth.js';
 
+// Response schema for fast-json-stringify serialization (Fastify uses this automatically)
+const authUserSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    email: { type: 'string' },
+    displayName: { type: 'string' },
+    emailVerified: { type: 'boolean' },
+    mfaEnabled: { type: 'boolean' },
+    roles: { type: 'array', items: { type: 'string' } },
+    createdAt: { type: 'string' },
+    updatedAt: { type: 'string' },
+  },
+} as const;
+
+const authTokenResponseSchema = {
+  type: 'object',
+  properties: {
+    user: authUserSchema,
+    accessToken: { type: 'string' },
+    refreshToken: { type: 'string' },
+    expiresIn: { type: 'number' },
+    tokenType: { type: 'string' },
+    // MFA challenge fields (returned when MFA is required)
+    mfaRequired: { type: 'boolean' },
+    mfaToken: { type: 'string' },
+    mfaMethods: { type: 'array', items: { type: 'string' } },
+  },
+} as const;
+
 const registerSchema = {
   body: {
     type: 'object',
@@ -10,6 +40,9 @@ const registerSchema = {
       password: { type: 'string', minLength: 1 },
       displayName: { type: 'string', minLength: 1, maxLength: 100 },
     },
+  },
+  response: {
+    201: authTokenResponseSchema,
   },
 };
 
@@ -22,6 +55,9 @@ const loginSchema = {
       password: { type: 'string', minLength: 1 },
     },
   },
+  response: {
+    200: authTokenResponseSchema,
+  },
 };
 
 const refreshSchema = {
@@ -31,6 +67,9 @@ const refreshSchema = {
     properties: {
       refreshToken: { type: 'string', minLength: 1 },
     },
+  },
+  response: {
+    200: authTokenResponseSchema,
   },
 };
 

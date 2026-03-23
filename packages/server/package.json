@@ -30,6 +30,8 @@
     "@argusjs/hash-argon2": "workspace:*",
     "@argusjs/ratelimit-memory": "workspace:*",
     "@argusjs/ratelimit-redis": "workspace:*",
+    "@argusjs/token-jwt-es256": "workspace:*",
+    "@argusjs/token-jwt-hs256": "workspace:*",
     "@argusjs/token-jwt-rs256": "workspace:*",
     "@fastify/compress": "^8.3.1",
     "@fastify/cors": "^10.0.0",

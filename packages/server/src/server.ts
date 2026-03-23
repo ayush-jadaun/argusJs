@@ -11,6 +11,7 @@ import { Argon2Hasher } from '@argusjs/hash-argon2';
 import { RS256TokenProvider } from '@argusjs/token-jwt-rs256';
 import { MemoryEmailProvider } from '@argusjs/email-memory';
 import { RedisRateLimiter } from '@argusjs/ratelimit-redis';
+import type { TokenProvider } from '@argusjs/core';
 
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -44,15 +45,36 @@ async function main() {
     parallelism: 1,      // 1 instead of 4
   } : undefined);        // production uses defaults
 
+  // JWT algorithm selection via JWT_ALGORITHM env var (rs256 | es256 | hs256)
+  const jwtAlgorithm = process.env.JWT_ALGORITHM || 'rs256';
+  let tokenProvider: TokenProvider;
+
+  if (jwtAlgorithm === 'hs256') {
+    const { HS256TokenProvider } = await import('@argusjs/token-jwt-hs256');
+    tokenProvider = new HS256TokenProvider({
+      secret: process.env.JWT_SECRET || 'change-me-in-production-at-least-32-chars!!',
+      issuer: process.env.JWT_ISSUER || 'argus',
+      audience: process.env.JWT_AUDIENCE ? process.env.JWT_AUDIENCE.split(',') : ['argus'],
+    });
+  } else if (jwtAlgorithm === 'es256') {
+    const { ES256TokenProvider } = await import('@argusjs/token-jwt-es256');
+    tokenProvider = new ES256TokenProvider({
+      issuer: process.env.JWT_ISSUER || 'argus',
+      audience: process.env.JWT_AUDIENCE ? process.env.JWT_AUDIENCE.split(',') : ['argus'],
+    });
+  } else {
+    tokenProvider = new RS256TokenProvider({
+      privateKey: process.env.JWT_PRIVATE_KEY || undefined,
+      issuer: process.env.JWT_ISSUER || 'argus',
+      audience: process.env.JWT_AUDIENCE ? process.env.JWT_AUDIENCE.split(',') : ['argus'],
+    });
+  }
+
   const argus = new Argus({
     db: db,
     cache: cache,
     hasher,
-    token: new RS256TokenProvider({
-      privateKey: process.env.JWT_PRIVATE_KEY || undefined,
-      issuer: process.env.JWT_ISSUER || 'argus',
-      audience: process.env.JWT_AUDIENCE ? process.env.JWT_AUDIENCE.split(',') : ['argus'],
-    }),
+    token: tokenProvider,
     email: new MemoryEmailProvider(), // swap with SendGrid/SES/SMTP in production
     rateLimiter: redisUrl ? new RedisRateLimiter({ url: redisUrl }) : undefined,
     password: { minLength: 8, maxLength: 128, historyCount: 5 },

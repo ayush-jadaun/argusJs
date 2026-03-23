@@ -40,10 +40,17 @@ export class PostgresAdapter implements DbAdapter {
   }
 
   async init(): Promise<void> {
+    // NOTE: Prepared statements — Drizzle ORM with postgres.js automatically uses
+    // prepared statements for all parameterized queries (tagged template literals).
+    // The postgres.js driver sends Parse/Bind/Execute at the protocol level, so
+    // repeated queries reuse the server-side prepared plan. There is no additional
+    // `prepare` option needed; this is the default behavior.
+    // See: https://github.com/porsager/postgres#tagged-template-queries
     const poolOptions = {
       max: this.config.max ?? 10,
       idle_timeout: this.config.idleTimeout ?? 30,
       connect_timeout: this.config.connectTimeout ?? 10,
+      // prepare: true is implicit — postgres.js prepares all tagged template queries
     };
 
     if (this.config.connectionString) {

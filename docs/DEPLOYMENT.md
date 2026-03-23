@@ -312,6 +312,8 @@ Memory is important because Argon2 uses 64 MB per concurrent hash. With `UV_THRE
 | `HOST` | No | `0.0.0.0` | Server bind address |
 | `NODE_ENV` | No | `development` | `production` for secure Argon2 defaults |
 | `LOG_LEVEL` | No | `info` | `trace`, `debug`, `info`, `warn`, `error`, `fatal` |
+| `JWT_ALGORITHM` | No | `rs256` | JWT signing algorithm: `rs256`, `es256`, or `hs256` |
+| `JWT_SECRET` | No* | -- | HMAC secret for HS256 (required when `JWT_ALGORITHM=hs256`, min 32 chars) |
 | `JWT_ISSUER` | No | `argus` | JWT `iss` claim |
 | `JWT_AUDIENCE` | No | `argus` | JWT `aud` claim (comma-separated for multiple) |
 | `JWT_PRIVATE_KEY` | No | Auto-generated | RSA private key (PEM). Auto-generates if not provided |
