@@ -1,0 +1,19 @@
+{
+  "versionSource": "package.json",
+  "commitTypes": {
+    "feat": "minor",
+    "fix": "patch",
+    "perf": "patch",
+    "refactor": "patch",
+    "docs": "none",
+    "test": "none",
+    "ci": "none",
+    "chore": "none"
+  },
+  "linked": [
+    ["core", "server", "client"]
+  ],
+  "policies": {
+    "requireApproval": ["major"]
+  }
+}

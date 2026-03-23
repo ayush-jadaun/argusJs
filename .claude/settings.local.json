@@ -19,7 +19,10 @@
       "WebSearch",
       "Bash(docker run:*)",
       "Bash(docker rm:*)",
-      "Bash(curl -sf http://localhost:8090/health/ready)"
+      "Bash(curl -sf http://localhost:8090/health/ready)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "Bash(pnpm add:*)"
     ]
   }
 }
