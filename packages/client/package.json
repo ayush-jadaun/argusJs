@@ -27,7 +27,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@argusjs/core": "^0.1.2"
+    "@argusjs/core": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18.0.0"

@@ -23,7 +23,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@argusjs/core": "^0.1.2",
+    "@argusjs/core": "workspace:*",
     "argon2": "^0.41.0"
   },
   "devDependencies": {

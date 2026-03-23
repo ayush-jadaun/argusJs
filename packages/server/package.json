@@ -27,7 +27,7 @@
   "dependencies": {
     "@argusjs/cache-memory": "workspace:*",
     "@argusjs/cache-redis": "workspace:*",
-    "@argusjs/core": "^0.1.2",
+    "@argusjs/core": "workspace:*",
     "@argusjs/db-postgres": "workspace:*",
     "@argusjs/email-memory": "workspace:*",
     "@argusjs/hash-argon2": "workspace:*",

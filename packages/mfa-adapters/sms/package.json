@@ -23,7 +23,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@argusjs/core": "^0.1.2",
+    "@argusjs/core": "workspace:*",
     "twilio": "^5.0.0"
   },
   "devDependencies": {

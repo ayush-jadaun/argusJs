@@ -23,7 +23,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@argusjs/core": "^0.1.2",
+    "@argusjs/core": "workspace:*",
     "@sendgrid/mail": "^8.0.0"
   },
   "devDependencies": {
