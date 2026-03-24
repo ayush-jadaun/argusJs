@@ -1,9 +1,12 @@
 {
   "name": "@argusjs/mfa-webauthn",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "Apache-2.0",
-  "repository": { "type": "git", "url": "https://github.com/ayush-jadaun/argusJs" },
+  "repository": {
   "publishConfig": { "access": "public" },
+    "type": "git",
+    "url": "https://github.com/ayush-jadaun/argusJs"
+  },
   "files": [
     "dist",
     "README.md"
