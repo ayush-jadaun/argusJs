@@ -1,6 +1,7 @@
 {
   "name": "argus",
   "private": true,
+  "repository": { "type": "git", "url": "https://github.com/ayush-jadaun/argusJs" },
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
