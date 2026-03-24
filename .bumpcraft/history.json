@@ -1,5 +1,1622 @@
 [
   {
+    "version": "zxcvbn@0.1.4",
+    "previousVersion": "zxcvbn@0.1.3",
+    "date": "2026-03-24T09:07:01.466Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "hibp@0.1.4",
+    "previousVersion": "hibp@0.1.3",
+    "date": "2026-03-24T09:07:01.406Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "smtp@0.1.4",
+    "previousVersion": "smtp@0.1.3",
+    "date": "2026-03-24T09:07:01.348Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "ses@0.1.4",
+    "previousVersion": "ses@0.1.3",
+    "date": "2026-03-24T09:07:01.289Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "sendgrid@0.1.4",
+    "previousVersion": "sendgrid@0.1.3",
+    "date": "2026-03-24T09:07:01.228Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "saml@0.1.4",
+    "previousVersion": "saml@0.1.3",
+    "date": "2026-03-24T09:07:01.169Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "microsoft@0.1.4",
+    "previousVersion": "microsoft@0.1.3",
+    "date": "2026-03-24T09:07:01.110Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "google@0.1.4",
+    "previousVersion": "google@0.1.3",
+    "date": "2026-03-24T09:07:01.051Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "github@0.1.4",
+    "previousVersion": "github@0.1.3",
+    "date": "2026-03-24T09:07:00.992Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "discord@0.1.4",
+    "previousVersion": "discord@0.1.3",
+    "date": "2026-03-24T09:07:00.933Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "custom@0.1.4",
+    "previousVersion": "custom@0.1.3",
+    "date": "2026-03-24T09:07:00.875Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "apple@0.1.4",
+    "previousVersion": "apple@0.1.3",
+    "date": "2026-03-24T09:07:00.817Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "webauthn@0.1.4",
+    "previousVersion": "webauthn@0.1.3",
+    "date": "2026-03-24T09:07:00.758Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "totp@0.1.4",
+    "previousVersion": "totp@0.1.3",
+    "date": "2026-03-24T09:07:00.700Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "sms@0.1.4",
+    "previousVersion": "sms@0.1.3",
+    "date": "2026-03-24T09:07:00.641Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "jwt-rs256@0.1.4",
+    "previousVersion": "jwt-rs256@0.1.3",
+    "date": "2026-03-24T09:07:00.583Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "jwt-hs256@0.1.4",
+    "previousVersion": "jwt-hs256@0.1.3",
+    "date": "2026-03-24T09:07:00.524Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "jwt-es256@0.1.4",
+    "previousVersion": "jwt-es256@0.1.3",
+    "date": "2026-03-24T09:07:00.465Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "scrypt@0.1.4",
+    "previousVersion": "scrypt@0.1.3",
+    "date": "2026-03-24T09:07:00.407Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "bcrypt@0.1.4",
+    "previousVersion": "bcrypt@0.1.3",
+    "date": "2026-03-24T09:07:00.348Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "argon2@0.1.4",
+    "previousVersion": "argon2@0.1.3",
+    "date": "2026-03-24T09:07:00.289Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "redis@0.1.4",
+    "previousVersion": "redis@0.1.3",
+    "date": "2026-03-24T09:07:00.230Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "postgres@0.1.4",
+    "previousVersion": "postgres@0.1.3",
+    "date": "2026-03-24T09:07:00.170Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "mongodb@0.1.4",
+    "previousVersion": "mongodb@0.1.3",
+    "date": "2026-03-24T09:07:00.112Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "memory@0.1.4",
+    "previousVersion": "memory@0.1.3",
+    "date": "2026-03-24T09:07:00.053Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "server@0.1.5",
+    "previousVersion": "server@0.1.4",
+    "date": "2026-03-24T09:06:59.994Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.5](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.5) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.4...v0.1.5))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "security@0.1.4",
+    "previousVersion": "security@0.1.3",
+    "date": "2026-03-24T09:06:59.936Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "dashboard@0.1.4",
+    "previousVersion": "dashboard@0.1.3",
+    "date": "2026-03-24T09:06:59.878Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.4](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.4) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.3...v0.1.4))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "core@0.1.5",
+    "previousVersion": "core@0.1.4",
+    "date": "2026-03-24T09:06:59.819Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      },
+      {
+        "hash": "e3244121f2135e3ce26141111e309c20ce30fb1c",
+        "type": "fix",
+        "scope": "core",
+        "subject": "update bumpcraft to 1.5.4 (default plugins fix)",
+        "body": null,
+        "breaking": false,
+        "raw": "e3244121f2135e3ce26141111e309c20ce30fb1c fix(core): update bumpcraft to 1.5.4 (default plugins fix)"
+      },
+      {
+        "hash": "250b7b0e8a56639a8cfd06f769e21085dc39e64a",
+        "type": "fix",
+        "scope": "core",
+        "subject": "update bumpcraft to 1.5.2, use pnpm-workspace.yaml auto-detect",
+        "body": null,
+        "breaking": false,
+        "raw": "250b7b0e8a56639a8cfd06f769e21085dc39e64a fix(core): update bumpcraft to 1.5.2, use pnpm-workspace.yaml auto-detect"
+      },
+      {
+        "hash": "b4dd48dfcf0b16bc5495b1d618c19258f1e9ba84",
+        "type": "fix",
+        "scope": "core",
+        "subject": "update bumpcraft to 1.5.1 (monorepo validate fix)",
+        "body": null,
+        "breaking": false,
+        "raw": "b4dd48dfcf0b16bc5495b1d618c19258f1e9ba84 fix(core): update bumpcraft to 1.5.1 (monorepo validate fix)"
+      }
+    ],
+    "changelogOutput": "## [0.1.5](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.5) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.4...v0.1.5))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n- **core:** update bumpcraft to 1.5.4 (default plugins fix) ([e324412](https://github.com/ayush-jadaun/argusJs/commit/e3244121f2135e3ce26141111e309c20ce30fb1c))\n- **core:** update bumpcraft to 1.5.2, use pnpm-workspace.yaml auto-detect ([250b7b0](https://github.com/ayush-jadaun/argusJs/commit/250b7b0e8a56639a8cfd06f769e21085dc39e64a))\n- **core:** update bumpcraft to 1.5.1 (monorepo validate fix) ([b4dd48d](https://github.com/ayush-jadaun/argusJs/commit/b4dd48dfcf0b16bc5495b1d618c19258f1e9ba84))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
+    "version": "client@0.1.5",
+    "previousVersion": "client@0.1.4",
+    "date": "2026-03-24T09:06:59.754Z",
+    "commits": [
+      {
+        "hash": "4d6893fcc1f0556fd834843ab8c154626787570d",
+        "type": "fix",
+        "scope": null,
+        "subject": "merge remote version bumps + add publishConfig access:public",
+        "body": null,
+        "breaking": false,
+        "raw": "4d6893fcc1f0556fd834843ab8c154626787570d fix: merge remote version bumps + add publishConfig access:public"
+      },
+      {
+        "hash": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63",
+        "type": "fix",
+        "scope": null,
+        "subject": "add publishConfig access:public to all packages for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63 fix: add publishConfig access:public to all packages for npm provenance"
+      },
+      {
+        "hash": "351452e6ae90766ed0106c2b1679e4c9495e7505",
+        "type": "fix",
+        "scope": null,
+        "subject": "add repository field to all package.json for npm provenance",
+        "body": null,
+        "breaking": false,
+        "raw": "351452e6ae90766ed0106c2b1679e4c9495e7505 fix: add repository field to all package.json for npm provenance"
+      },
+      {
+        "hash": "44c5959cca594b79de0913b1716fe1e16104ee6f",
+        "type": "fix",
+        "scope": null,
+        "subject": "restore workspace:* refs after bumpcraft version replacement",
+        "body": null,
+        "breaking": false,
+        "raw": "44c5959cca594b79de0913b1716fe1e16104ee6f fix: restore workspace:* refs after bumpcraft version replacement"
+      },
+      {
+        "hash": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007",
+        "type": "ci",
+        "scope": null,
+        "subject": "add auto-release stage — bumpcraft release + publish on every push to main",
+        "body": null,
+        "breaking": false,
+        "raw": "dc5e90a80c47b1635e62b3b05c89ef66a4f74007 ci: add auto-release stage — bumpcraft release + publish on every push to main"
+      }
+    ],
+    "changelogOutput": "## [0.1.5](https://github.com/ayush-jadaun/argusJs/releases/tag/v0.1.5) (2026-03-24) ([compare](https://github.com/ayush-jadaun/argusJs/compare/v0.1.4...v0.1.5))\n\n### 🐛 Bug Fixes\n\n- merge remote version bumps + add publishConfig access:public ([4d6893f](https://github.com/ayush-jadaun/argusJs/commit/4d6893fcc1f0556fd834843ab8c154626787570d))\n- add publishConfig access:public to all packages for npm provenance ([776c6c1](https://github.com/ayush-jadaun/argusJs/commit/776c6c1953c5e8df48ccee77e4e77f0e8e0a8d63))\n- add repository field to all package.json for npm provenance ([351452e](https://github.com/ayush-jadaun/argusJs/commit/351452e6ae90766ed0106c2b1679e4c9495e7505))\n- restore workspace:* refs after bumpcraft version replacement ([44c5959](https://github.com/ayush-jadaun/argusJs/commit/44c5959cca594b79de0913b1716fe1e16104ee6f))\n\n### ci\n\n- add auto-release stage — bumpcraft release + publish on every push to main ([dc5e90a](https://github.com/ayush-jadaun/argusJs/commit/dc5e90a80c47b1635e62b3b05c89ef66a4f74007))\n"
+  },
+  {
     "version": "zxcvbn@0.1.3",
     "previousVersion": "zxcvbn@0.1.2",
     "date": "2026-03-24T08:50:07.157Z",
